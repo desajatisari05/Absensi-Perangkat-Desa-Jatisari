@@ -3,48 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABSENSI KADES & PERANGKAT DESA JATISARI</title>
+    <title>ABSENSI DESA JATISARI</title>
     <style>
-        * {font-family: Arial; margin: 0; padding: 0; box-sizing: border-box;}
-        body {background: #f0f4f8; padding:20px;}
-        .kotak {max-width:420px; margin:0 auto; background:#fff; border-radius:10px; padding:25px; box-shadow:0 3px 10px #0000001a; text-align:center;}
-        h2 {color:#0d47a1; margin-bottom:25px; font-size:22px; line-height:1.3;}
-        .input {width:100%; padding:14px; margin-bottom:12px; border:1px solid #bbb; border-radius:6px; font-size:16px;}
-        .tombol {width:100%; padding:15px; background:#1565c0; color:white; border:none; border-radius:6px; font-size:17px; font-weight:bold; cursor:pointer; transition:0.3s;}
-        .tombol.siap {background:#2e7d32;}
-        .tombol:disabled {background:#ccc; cursor:not-allowed;}
-        .pesan {margin-top:18px; padding:12px; border-radius:6px; font-weight:bold; display:block; min-height:40px;}
-        .sukses {background:#e8f5e9; color:#2e7d32;}
-        .gagal {background:#ffebee; color:#c62828;}
-        .info-bawah {font-size:14px; color:#555; margin-top:20px; line-height:1.6;}
+        * {font-family:Arial,sans-serif; margin:0; padding:0; box-sizing:border-box;}
+        body {background:#f0f4f8; padding:15px;}
+        .wadah {max-width:450px; margin:0 auto; background:#fff; border-radius:10px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+        h2 {color:#0d47a1; text-align:center; margin-bottom:20px; font-size:20px;}
+        label {display:block; margin:12px 0 5px; font-weight:bold; color:#333; font-size:15px;}
+        select, .info {width:100%; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:6px; background:#fff;}
+        .info {background:#f5f5f5; font-weight:bold; color:#0d47a1;}
+        .lokasi {margin:12px 0; padding:10px; border-radius:5px; font-size:14px; text-align:center;}
+        .dalam {background:#e8f5e9; color:#2e7d32;}
+        .luar {background:#ffebee; color:#c62828;}
+        button {width:100%; padding:14px; font-size:17px; font-weight:bold; border:none; border-radius:6px; background:#ccc; color:#666; margin-top:10px; cursor:not-allowed;}
+        button.aktif {background:#2e7d32; color:#fff; cursor:pointer;}
+        .pesan {margin-top:15px; padding:12px; border-radius:5px; text-align:center; font-weight:bold; display:none;}
+        .sukses {background:#e8f5e9; color:#2e7d32; display:block !important;}
+        .error {background:#ffebee; color:#c62828; display:block !important;}
     </style>
 </head>
 <body>
-<div class="kotak">
-    <h2>ABSENSI KADES DAN PERANGKAT DESA JATISARI</h2>
-    <input type="text" id="nama" class="input" placeholder="Masukkan Nama Lengkap">
-    <input type="text" id="jabatan" class="input" placeholder="Masukkan Jabatan">
-    <select id="pilih" class="input">
+<div class="wadah">
+    <h2>📋 ABSENSI DESA JATISARI</h2>
+
+    <label>Nama Lengkap</label>
+    <select id="nama" onchange="isiJabatan()">
+        <option value="">-- Pilih Nama --</option>
+        <option data-jabatan="Kepala Desa">MUHAMAD HASYIM</option>
+        <option data-jabatan="Sekretaris Desa">RUBIANTO</option>
+        <option data-jabatan="Kaur TU dan Umum">ETIK WAHYUNINGSIH</option>
+        <option data-jabatan="Kaur Keuangan">NURCHOIRIDA NIRWANAH</option>
+        <option data-jabatan="Kaur Perencanaan">ZAINUL FITRIANDI</option>
+        <option data-jabatan="Kasi Pemerintahan">IKA NURSASI</option>
+        <option data-jabatan="Kasi Kesra">NISFUL LAILI KA J.</option>
+        <option data-jabatan="Kasi Pelayanan">WUI SAHRONI</option>
+        <option data-jabatan="Kasun Karang Tengah">YUDI ARMINTO</option>
+        <option data-jabatan="Kasun Cerme Wetan">NURSUADI</option>
+        <option data-jabatan="Kasun Cerme Kulon">ANDIK EKA SUDIAWANTO</option>
+        <option data-jabatan="Kasun Krajan">WAHYU HARI P.</option>
+    </select>
+
+    <label>Jabatan</label>
+    <div class="info" id="jabatan">-</div>
+
+    <label>Keterangan</label>
+    <select id="ket">
         <option value="Hadir">Hadir</option>
+        <option value="Terlambat">Terlambat</option>
         <option value="Sakit">Sakit</option>
         <option value="Izin">Izin</option>
     </select>
-    <button id="btnAbsen" class="tombol" onclick="prosesAbsen()">KLIK UNTUK ABSEN</button>
-    <div id="pesan" class="pesan">Siap untuk absen...</div>
-    <div class="info-bawah">
-        Jam Absen: 07.30 - 12.00<br>
-        ✅ WAJIB BUKA DI GOOGLE CHROME & AKTIFKAN GPS<br>
-        Jln Kapten Jama'ari No.76, Tempeh Lumajang
-    </div>
+
+    <div id="lokasi" class="lokasi">Memeriksa lokasi...</div>
+
+    <button id="tombol" onclick="absen()">✅ KLIK UNTUK ABSEN</button>
+    <div id="pesan" class="pesan"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
 <script>
-const KANTOR = {lat: -8.1961752, lng: 113.161497};
-const RADIUS_METER = 500;
-
 const firebaseConfig = {
   apiKey: "AIzaSyC9Z8wXzrT8xWkL9rM7vNqPwQeRbTtYwU",
   authDomain: "absen-desa-jatisari.firebaseapp.com",
@@ -55,114 +73,72 @@ const firebaseConfig = {
   appId: "1:123456789012:web:abc123def456ghi789jkl0"
 };
 
-// Cek apakah browser bisa konek database
-try {
-    firebase.initializeApp(firebaseConfig);
-    var db = firebase.database().ref("dataAbsen");
-} catch(e) {
-    document.getElementById("pesan").className = "pesan gagal";
-    document.getElementById("pesan").innerText = "❌ Browser tidak didukung! Pakai Google Chrome";
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database().ref("dataAbsen");
+
+const KANTOR = {lat: -8.1961752, lng: 113.161497};
+const RADIUS = 300;
+let lokasiOk = false;
+
+// === ISI JABATAN OTOMATIS ===
+function isiJabatan(){
+    const sel = document.getElementById("nama");
+    const jab = sel.selectedOptions[0].dataset.jabatan || "-";
+    document.getElementById("jabatan").innerText = jab;
+    cekSiap();
 }
 
-function hitungJarak(lat1,lng1,lat2,lng2){
-    const R = 6371;
-    let dLat = (lat2-lat1)*Math.PI/180;
-    let dLng = (lng2-lng1)*Math.PI/180;
-    let a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+// === CEK LOKASI GPS ===
+function jarakMeter(lat1,lng1,lat2,lng2){
+    const R=6371e3, p=Math.PI/180;
+    const a=Math.sin((lat2-lat1)*p/2)**2 + Math.cos(lat1*p)*Math.cos(lat2*p)*Math.sin((lng2-lng1)*p/2)**2;
+    return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
 }
 
-document.getElementById("nama").addEventListener("input",cekSiap);
-document.getElementById("jabatan").addEventListener("input",cekSiap);
-function cekSiap(){
-    const n = document.getElementById("nama").value.trim();
-    const j = document.getElementById("jabatan").value.trim();
-    const btn = document.getElementById("btnAbsen");
-    if(n && j) btn.classList.add("siap");
-    else btn.classList.remove("siap");
-}
-
-function prosesAbsen(){
-    const pesan = document.getElementById("pesan");
-    pesan.className = "pesan";
-    pesan.innerText = "⌛ Sedang memproses... tunggu sebentar";
-
-    const skrg = new Date();
-    const menit = skrg.getHours()*60 + skrg.getMinutes();
-
-    // Cek jam
-    if(menit < 7*60+30 || menit > 12*60){
-        pesan.className = "pesan gagal";
-        pesan.innerText = "❌ Di luar jam absen! (07.30 - 12.00)";
-        return;
-    }
-
-    // CEK APAKAH FITUR LOKASI ADA DI HP
-    if (!navigator.geolocation) {
-        pesan.className = "pesan gagal";
-        pesan.innerText = "❌ HP tidak mendukung GPS/Lokasi!";
-        return;
-    }
-
-    // Minta lokasi dengan pengaturan paling jelas & cepat
+if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(
-    // Jika BERHASIL dapat lokasi
-    pos=>{
-        pesan.innerText = "✅ Lokasi diterima... sedang kirim data";
-
-        let jarak = hitungJarak(pos.coords.latitude, pos.coords.longitude, KANTOR.lat, KANTOR.lng);
-        if(jarak > RADIUS_METER/1000){
-            pesan.className = "pesan gagal";
-            pesan.innerText = `❌ Di luar kantor! Jarak: ${Math.round(jarak*1000)}m`;
-            return;
-        }
-
-        let ket = document.getElementById("pilih").value;
-        if(ket === "Hadir"){
-            ket = menit <= 8*60+30 ? "Hadir" : "Terlambat";
-        }
-
-        let nama = document.getElementById("nama").value.trim();
-        let jabatan = document.getElementById("jabatan").value.trim();
-        if(!nama || !jabatan){
-            pesan.className = "pesan gagal";
-            pesan.innerText = "❌ Nama & Jabatan harus diisi!";
-            return;
-        }
-
-        let dataBaru = {
-            nama:nama, jabatan:jabatan, ket:ket,
-            tgl: skrg.toLocaleDateString('id-ID'),
-            jam: skrg.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}),
-            waktu: skrg.toISOString()
-        };
-
-        // Kirim ke database
-        db.push(dataBaru)
-        .then(()=>{
-            pesan.className = "pesan sukses";
-            pesan.innerText = "✅ BERHASIL TERKIRIM! Cek Admin sekarang";
-            document.getElementById("btnAbsen").disabled = true;
-        })
-        .catch(err=>{
-            pesan.className = "pesan gagal";
-            pesan.innerText = "❌ Gagal kirim: "+err.message;
-        });
-    },
-    // Jika DITOLAK / GAGAL dapat lokasi
-    err=>{
-        pesan.className = "pesan gagal";
-        if(err.code === 1) {
-            pesan.innerText = "❌ DITOLAK! Buka Pengaturan HP -> Izinkan Lokasi untuk Chrome";
-        } else if(err.code === 2) {
-            pesan.innerText = "❌ TIDAK DAPAT LOKASI! Nyalakan GPS & sinyal kuat";
-        } else {
-            pesan.innerText = "❌ Gagal ambil lokasi: "+err.message;
-        }
-    },
-    // Pengaturan lokasi: akurat tinggi, tunggu maks 10 detik
-    {enableHighAccuracy:true, timeout:10000, maximumAge:0});
+        pos=>{
+            const d = jarakMeter(KANTOR.lat,KANTOR.lng,pos.coords.latitude,pos.coords.longitude);
+            const el = document.getElementById("lokasi");
+            if(d<=RADIUS){ el.className="lokasi dalam"; el.innerText="✅ Di dalam kantor ("+d+" m)"; lokasiOk=true; }
+            else { el.className="lokasi luar"; el.innerText="❌ Di luar kantor ("+d+" m)"; lokasiOk=false; }
+            cekSiap();
+        },
+        err=>{document.getElementById("lokasi").innerText="⚠️ GPS tidak aktif"; lokasiOk=false;},
+        {enableHighAccuracy:true,timeout:10000}
+    );
 }
+
+function cekSiap(){
+    const tombol = document.getElementById("tombol");
+    document.getElementById("nama").value && lokasiOk ? tombol.classList.add("aktif") : tombol.classList.remove("aktif");
+}
+
+// === KIRIM DATA ABSEN ===
+function absen(){
+    const nama = document.getElementById("nama").value;
+    const jabatan = document.getElementById("nama").selectedOptions[0].dataset.jabatan;
+    const ket = document.getElementById("ket").value;
+    if(!nama) return pesan("Pilih nama dulu!","error");
+    if(!lokasiOk) return pesan("Anda di luar kantor!","error");
+
+    const tglSekarang = new Date();
+    const jam = tglSekarang.getHours()+":"+String(tglSekarang.getMinutes()).padStart(2,"0");
+    const tgl = tglSekarang.getDate()+"/"+(tglSekarang.getMonth()+1)+"/"+tglSekarang.getFullYear();
+    const menit = tglSekarang.getHours()*60 + tglSekarang.getMinutes();
+    const hasilKet = (ket==="Hadir"||ket==="Terlambat") ? (menit<=510?"Hadir":"Terlambat") : ket;
+
+    db.push({
+        nama:nama, jabatan:jabatan, jam:jam, tgl:tgl, ket:hasilKet, waktu:tglSekarang.toISOString()
+    }).then(()=>{
+        pesan("✅ BERHASIL TERKIRIM!","sukses");
+        document.getElementById("nama").value="";
+        document.getElementById("jabatan").innerText="-";
+        cekSiap();
+    }).catch(e=>pesan("❌ Gagal: "+e.message,"error"));
+}
+
+function pesan(teks,jenis){const p=document.getElementById("pesan");p.className="pesan "+jenis;p.innerText=teks;}
 </script>
 </body>
 </html>
