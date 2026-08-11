@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADMIN ABSENSI KADES & PERANGKAT DESA JATISARI</title>
+    <style>
+        * {font-family: Arial; margin: 0; padding: 0; box-sizing: border-box;}
+        body {background: #f0f4f8; padding:20px;}
+        .wadah {max-width:960px; margin:0 auto; background:#fff; border-radius:8px; padding:20px; box-shadow:0 2px 8px #0000001a;}
+        h2 {color:#0d47a1; text-align:center; margin-bottom:15px;}
+        .info {background:#e3f2fd; padding:12px; border-radius:5px; margin-bottom:15px; font-size:14px; text-align:center;}
+        .status {padding:8px; border-radius:5px; font-weight:bold; text-align:center; margin-bottom:10px;}
+        .terhubung {color:green; background:#e8f5e9;}
+        .putus {color:red; background:#ffebee;}
+        table {width:100%; border-collapse:collapse; margin-top:10px;}
+        th,td {border:1px solid #ccc; padding:10px; text-align:left; font-size:14px;}
+        th {background:#1565c0; color:white;}
+        .merah {color:#d32f2f; font-weight:bold;}
+        .hijau {color:#2e7d32;}
+        .btn {padding:8px 16px; border:none; border-radius:4px; cursor:pointer; font-size:14px; margin-right:5px; margin-bottom:5px;}
+        .btn-hijau {background:#2e7d32; color:white;}
+    </style>
+</head>
+<body>
+<div class="wadah">
+    <h2>?? ABSENSI KADES DAN PERANGKAT DESA JATISARI</h2>
+    <div class="info">
+        Alamat: Jln Kapten Jama'ari No.76, Tempeh, Lumajang<br>
+        Aturan: 07.30 - 08.30 = Hadir | 08.31 - 12.00 = Terlambat
+    </div>
+    <div id="statusKoneksi" class="status">Memeriksa koneksi...</div>
+    <button class="btn btn-hijau" onclick="unduhExcel()">?? Unduh Excel</button>
+    <button class="btn" onclick="hapusSemua()">??? Kosongkan Data</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Nama Lengkap</th>
+                <th>Jabatan</th>
+                <th>Tanggal</th>
+                <th>Jam Masuk</th>
+                <th>Keterangan</th>
+            </tr>
+        </thead>
+        <tbody id="tabelData">
+            <tr><td colspan='6' style='text-align:center;'>Sedang memuat data...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC9Z8wXzrT8xWkL9rM7vNqPwQeRbTtYwU",
+  authDomain: "absen-desa-jatisari.firebaseapp.com",
+  databaseURL: "https://absen-desa-jatisari-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "absen-desa-jatisari",
+  storageBucket: "absen-desa-jatisari.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abc123def456ghi789jkl0"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database().ref("dataAbsen");
+let data = [];
+
+function muatTabel() {
+    const tb = document.getElementById("tabelData");
+    tb.innerHTML = "";
+    if (!data || data.length === 0) {
+        tb.innerHTML = "<tr><td colspan='6' style='text-align:center; color:#666;'>Belum ada data absen</td></tr>";
+        return;
+    }
+    data.sort((a,b) => new Date(b.waktu) - new Date(a.waktu))
+        .forEach((d, i) => {
+            let kelas = d.ket.includes("Terlambat") ? "merah" : "hijau";
+            tb.innerHTML += `
+            <tr>
+                <td>${i+1}</td>
+                <td>${d.nama}</td>
+                <td>${d.jabatan}</td>
+                <td>${d.tgl}</td>
+                <td>${d.jam}</td>
+                <td class="${kelas}">${d.ket}</td>
+            </tr>`;
+        });
+}
+
+db.on("value", (snap) => {
+    data = snap.val() || [];
+    muatTabel();
+    document.getElementById("statusKoneksi").innerText = "? TERHUBUNG - Data diperbarui otomatis";
+    document.getElementById("statusKoneksi").className = "status terhubung";
+}, (err) => {
+    document.getElementById("statusKoneksi").innerText = "? PUTUS KONEKSI: " + err.message;
+    document.getElementById("statusKoneksi").className = "status putus";
+});
+
+function unduhExcel(){
+    const buku = XLSX.utils.book_new();
+    const lembar = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(buku, lembar, "Absen Jatisari");
+    XLSX.writeFile(buku, "Data_Absen_Jatisari.xlsx");
+}
+
+function hapusSemua(){
+    if(confirm("Yakin hapus SEMUA data absensi?")){
+        db.set([]);
+    }
+}
+</script>
+</body>
+</html>
