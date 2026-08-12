@@ -148,9 +148,14 @@ function unduhExcel(){
     const jmlHari = jumlahHari(bln, thn);
     const namaBulan = ["","JANUARI","PEBRUARI","MARET","APRIL","MEI","JUNI","JULI","AGUSTUS","SEPTEMBER","OKTOBER","NOVEMBER","DESEMBER"][bln];
 
-    const barisAwal = ["NO","NAMA","JABATAN"];
-    for(let t=1; t<=jmlHari; t++) barisAwal.push(t);
-    const dataExcel = [barisAwal];
+    // === BARIS JUDUL PERSIS SEPERTI FOTO ===
+    const barisJudul = ["ABSENSI KEPALA DESA DAN PERANGKAT DESA JATISARI"];
+    const barisBulan = ["BULAN " + namaBulan + " TAHUN " + thn];
+    const barisKosong = [""];
+    const barisTabel = ["NO","NAMA","JABATAN"];
+    for(let t=1; t<=jmlHari; t++) barisTabel.push(t);
+
+    const dataExcel = [barisJudul, barisBulan, barisKosong, barisTabel];
 
     DAFTAR_URUTAN.forEach((orang, urut) => {
         const baris = [urut+1, orang.nama, orang.jabatan];
@@ -166,6 +171,7 @@ function unduhExcel(){
     const lembar = XLSX.utils.aoa_to_sheet(dataExcel);
     XLSX.utils.book_append_sheet(buku, lembar, "ABSENSI");
     XLSX.writeFile(buku, `ABSENSI_DESA_JATISARI_${namaBulan}_${thn}.xlsx`);
+}
 }
 
 function hapusSemua(){
