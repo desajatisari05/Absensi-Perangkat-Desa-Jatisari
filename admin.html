@@ -15,11 +15,11 @@
         .terhubung {color:green; background:#e8f5e9;}
         .putus {color:red; background:#ffebee;}
         table {border-collapse:collapse; width:100%; white-space:nowrap;}
-        th, td {border:1px solid #000; padding:5px 4px; text-align:center; vertical-align:middle;}
-        th {background:#f5f5f5; color:#000; font-size:12px; font-weight:bold;}
+        th, td {border:1px solid #000; padding:2px 2px; text-align:center; vertical-align:middle;}
+        th {background:#f5f5f5; color:#000; font-size:12px; font-weight:bold; height:32px;}
         th.libur {background:#ffebee; color:#c62828; font-weight:bold;}
-        td {font-size:12px; height:32px;}
-        .nama {text-align:left; white-space:nowrap; min-width:220px; font-weight:500;}
+        td {font-size:13px; height:32px;}
+        .nama {text-align:left; white-space:nowrap; min-width:220px; font-weight:500; padding:3px 6px;}
         .no {width:35px;}
         .tg {width:38px;}
         .hadir {background:#e8f5e9; color:#2e7d32; font-weight:bold;}
@@ -27,7 +27,7 @@
         .sakit {background:#f3e5f5; color:#7b1fa2; font-weight:bold;}
         .izin {background:#e3f2fd; color:#1565c0; font-weight:bold;}
         .kosong {color:#aaa;}
-        .teks-libur {color:#c62828; font-weight:bold; writing-mode:vertical-rl; text-orientation:upright; font-size:13px; letter-spacing:2px;}
+        .huruf-per-baris {color:#c62828; font-weight:bold; font-size:14px; line-height:14px; padding:1px 0;}
         .tombol-bar {text-align:center; margin-bottom:12px;}
         button {padding:8px 16px; border:none; border-radius:4px; cursor:pointer; font-size:14px; margin:0 5px; font-weight:bold;}
         .btn-hijau {background:#2e7d32; color:#fff;}
@@ -142,7 +142,8 @@ function buatTabel(){
         for(let t=1; t<=jmlHari; t++){
             const info = cekLibur(t, bln, thn);
             if(info.libur){
-                isi += `<td class="teks-libur">${info.teks}</td>`;
+                const huruf = info.teks.split("").map(h => `<div class="huruf-per-baris">${h}</div>`).join("");
+                isi += `<td>${huruf}</td>`;
                 continue;
             }
             const tglCari = t + "/" + bln + "/" + thn;
@@ -193,7 +194,7 @@ function unduhExcel(){
         for(let t=1; t<=jmlHari; t++){
             const info = cekLibur(t, bln, thn);
             if(info.libur){
-                baris.push(info.teks);
+                baris.push(info.teks.split("").join("\n"));
                 continue;
             }
             const tglCari = t + "/" + bln + "/" + thn;
