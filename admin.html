@@ -148,7 +148,6 @@ function unduhExcel(){
     const jmlHari = jumlahHari(bln, thn);
     const namaBulan = ["","JANUARI","PEBRUARI","MARET","APRIL","MEI","JUNI","JULI","AGUSTUS","SEPTEMBER","OKTOBER","NOVEMBER","DESEMBER"][bln];
 
-    // === BARIS JUDUL PERSIS SEPERTI FOTO ===
     const barisJudul = ["ABSENSI KEPALA DESA DAN PERANGKAT DESA JATISARI"];
     const barisBulan = ["BULAN " + namaBulan + " TAHUN " + thn];
     const barisKosong = [""];
@@ -171,7 +170,6 @@ function unduhExcel(){
     const lembar = XLSX.utils.aoa_to_sheet(dataExcel);
     XLSX.utils.book_append_sheet(buku, lembar, "ABSENSI");
     XLSX.writeFile(buku, `ABSENSI_DESA_JATISARI_${namaBulan}_${thn}.xlsx`);
-}
 }
 
 function hapusSemua(){
