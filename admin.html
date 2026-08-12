@@ -27,6 +27,7 @@
         .sakit {background:#f3e5f5; color:#7b1fa2; font-weight:bold;}
         .izin {background:#e3f2fd; color:#1565c0; font-weight:bold;}
         .kosong {color:#aaa;}
+        .libur {background:#ffcdd2 !important; color:#c62828 !important; font-weight:bold; writing-mode:vertical-rl; text-orientation:upright; font-size:11px;}
         .tombol-bar {text-align:center; margin-bottom:12px;}
         button {padding:8px 16px; border:none; border-radius:4px; cursor:pointer; font-size:14px; margin:0 5px; font-weight:bold;}
         .btn-hijau {background:#2e7d32; color:#fff;}
@@ -41,7 +42,18 @@
     <div class="bulan-pilih">
         <label>Bulan: </label>
         <select id="pilihBulan" onchange="buatTabel()">
-            <option value="8-2026">AGUSTUS 2026</option>
+            <option value="1-2026">JANUARI 2026</option>
+            <option value="2-2026">PEBRUARI 2026</option>
+            <option value="3-2026">MARET 2026</option>
+            <option value="4-2026">APRIL 2026</option>
+            <option value="5-2026">MEI 2026</option>
+            <option value="6-2026">JUNI 2026</option>
+            <option value="7-2026">JULI 2026</option>
+            <option value="8-2026" selected>AGUSTUS 2026</option>
+            <option value="9-2026">SEPTEMBER 2026</option>
+            <option value="10-2026">OKTOBER 2026</option>
+            <option value="11-2026">NOVEMBER 2026</option>
+            <option value="12-2026">DESEMBER 2026</option>
         </select>
     </div>
 
@@ -93,8 +105,35 @@ const DAFTAR_URUTAN = [
     {nama:"WAHYU HARI P.", jabatan:"Kasun Krajan"}
 ];
 
+// === DAFTAR TANGGAL MERAH NASIONAL TAHUN 2026 ===
+const TANGGAL_MERAH = {
+    "1-1": "Tahun Baru Masehi",
+    "1-29": "Tahun Baru Imlek",
+    "2-16": "Isra Mi'raj Nabi Muhammad SAW",
+    "3-29": "Hari Raya Nyepi",
+    "4-3": "Wafat Isa Almasih",
+    "5-1": "Hari Buruh Internasional",
+    "5-14": "Kenaikan Isa Almasih",
+    "5-26": "Hari Raya Waisak",
+    "6-1": "Hari Lahir Pancasila",
+    "6-17": "Hari Raya Idul Adha",
+    "7-6": "Tahun Baru Islam",
+    "8-17": "Hari Kemerdekaan RI",
+    "9-24": "Maulid Nabi Muhammad SAW",
+    "12-25": "Hari Raya Natal"
+};
+
 function jumlahHari(bulan, tahun){
     return new Date(tahun, bulan, 0).getDate();
+}
+
+function cekLibur(tgl, bln, thn){
+    const hari = new Date(thn, bln-1, tgl).getDay(); // 0 = Minggu
+    const kunci = bln + "-" + tgl;
+    if(hari === 0 || TANGGAL_MERAH[kunci]){
+        return {libur:true, keterangan: TANGGAL_MERAH[kunci] || "Minggu"};
+    }
+    return {libur:false, keterangan:""};
 }
 
 function buatTabel(){
@@ -103,15 +142,27 @@ function buatTabel(){
     const thn = parseInt(val[1]);
     const jmlHari = jumlahHari(bln, thn);
 
+    // === BAGIAN KEPALA TABEL ===
     let kepala = `<tr><th class="no">NO</th><th class="nama">NAMA</th><th class="nama">JABATAN</th>`;
-    for(let t=1; t<=jmlHari; t++) kepala += `<th class="tg">${t}</th>`;
+    for(let t=1; t<=jmlHari; t++){
+        const info = cekLibur(t, bln, thn);
+        kepala += info.libur 
+            ? `<th class="tg libur">${t}<br>${info.keterangan}</th>` 
+            : `<th class="tg">${t}</th>`;
+    }
     kepala += `</tr>`;
     document.getElementById("kepalaTabel").innerHTML = kepala;
 
+    // === ISI TABEL ===
     let isi = "";
     DAFTAR_URUTAN.forEach((orang, urut) => {
         isi += `<tr><td>${urut+1}</td><td class="nama">${orang.nama}</td><td class="nama">${orang.jabatan}</td>`;
         for(let t=1; t<=jmlHari; t++){
+            const infoLibur = cekLibur(t, bln, thn);
+            if(infoLibur.libur){
+                isi += `<td class="libur">LIBUR</td>`;
+                continue;
+            }
             const tglCari = t + "/" + bln + "/" + thn;
             const catatan = dataMentah.filter(d => d.nama === orang.nama && d.tgl === tglCari).sort((a,b)=>new Date(b.waktu)-new Date(a.waktu))[0];
             let tampil = "";
@@ -152,13 +203,20 @@ function unduhExcel(){
     const barisBulan = ["BULAN " + namaBulan + " TAHUN " + thn];
     const barisKosong = [""];
     const barisTabel = ["NO","NAMA","JABATAN"];
-    for(let t=1; t<=jmlHari; t++) barisTabel.push(t);
-
+    for(let t=1; t<=jmlHari; t++){
+        const info = cekLibur(t, bln, thn);
+        barisTabel.push(info.libur ? t + " (LIBUR)" : t);
+    }
     const dataExcel = [barisJudul, barisBulan, barisKosong, barisTabel];
 
     DAFTAR_URUTAN.forEach((orang, urut) => {
         const baris = [urut+1, orang.nama, orang.jabatan];
         for(let t=1; t<=jmlHari; t++){
+            const infoLibur = cekLibur(t, bln, thn);
+            if(infoLibur.libur){
+                baris.push("LIBUR");
+                continue;
+            }
             const tglCari = t + "/" + bln + "/" + thn;
             const catatan = dataMentah.filter(d => d.nama === orang.nama && d.tgl === tglCari).sort((a,b)=>new Date(b.waktu)-new Date(a.waktu))[0];
             baris.push(catatan ? (catatan.ket==="Sakit"?"sakit":catatan.ket==="Izin"?"ijin":catatan.jam.replace(".",":")) : "");
