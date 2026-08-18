@@ -97,11 +97,11 @@ const KANTOR_LNG = 113.1620121;
 const RADIUS_METER = 100;
 
 // === ATURAN JAM ABSENSI ===
-const JAM_BUKA = 7;      // Mulai bisa absen: 07:20
-const MENIT_BUKA = 20;
+const JAM_BUKA = 7;      // Mulai bisa absen: 07:00
+const MENIT_BUKA = 0;
 const JAM_TEPAT = 8;     // Batas tepat waktu: 08:30
 const MENIT_TEPAT = 30;
-const JAM_TUTUP = 12;    // Tutup absen: 12:00
+const JAM_TUTUP = 13;    // Tutup absen: 13:00
 const MENIT_TUTUP = 0;
 
 // === ISI PILIHAN NAMA ===
@@ -226,9 +226,9 @@ function cekJamAbsen(){
     const menit = sekarang.getMinutes();
     const totalMenit = jam * 60 + menit;
 
-    const bukaMenit = JAM_BUKA * 60 + MENIT_BUKA;     // 07:20 = 440
+    const bukaMenit = JAM_BUKA * 60 + MENIT_BUKA;     // 07:00 = 420
     const tepatMenit = JAM_TEPAT * 60 + MENIT_TEPAT; // 08:30 = 510
-    const tutupMenit = JAM_TUTUP * 60 + MENIT_TUTUP;  // 12:00 = 720
+    const tutupMenit = JAM_TUTUP * 60 + MENIT_TUTUP;  // 13:00 = 780
 
     if(totalMenit < bukaMenit || totalMenit >= tutupMenit){
         return {bisaAbsen: false, status: "DILUAR JAM"};
@@ -260,7 +260,7 @@ function kirimAbsen(){
     if(nama === "MUHAMAD HASYIM" && jabatan === "Kepala Desa"){
         const jamCek = cekJamAbsen();
         if(!jamCek.bisaAbsen){
-            pesan.textContent = "❌ Belum masuk jam absen! Mulai jam 07:20";
+            pesan.textContent = "❌ Belum masuk jam absen! Mulai jam 07:00 s/d 13:00";
             pesan.className = "pesan salah"; return;
         }
         simpanAbsen(nama, jabatan, jamCek.status, jamCek.warna);
@@ -277,7 +277,7 @@ function kirimAbsen(){
     if(keterangan === "Hadir"){
         const jamCek = cekJamAbsen();
         if(!jamCek.bisaAbsen){
-            pesan.textContent = "❌ Belum masuk jam absen! Mulai jam 07:20 s/d 12:00";
+            pesan.textContent = "❌ Belum masuk jam absen! Mulai jam 07:00 s/d 13:00";
             pesan.className = "pesan salah"; return;
         }
         if(!lokasiValid || kodeSaatIni === ""){
