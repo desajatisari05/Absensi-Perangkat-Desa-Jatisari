@@ -74,6 +74,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("dataAbsen");
+const dbHp = firebase.database().ref("hpTerpakai");
 
 // === DAFTAR KARYAWAN ===
 const DAFTAR = [
@@ -104,6 +105,10 @@ const MENIT_TEPAT = 30;
 const JAM_TUTUP = 13;    // Tutup absen: 13:00
 const MENIT_TUTUP = 0;
 
+// === IDENTITAS HP INI ===
+const ID_HP = btoa(navigator.userAgent + screen.width + screen.height).substring(0,12);
+let hpTerpakai = false;
+
 // === ISI PILIHAN NAMA ===
 const pilih = document.getElementById("namaPilih");
 DAFTAR.forEach((orang)=>{
@@ -116,6 +121,35 @@ DAFTAR.forEach((orang)=>{
 let lokasiValid = false;
 let kodeSaatIni = "";
 let lokasiDariKantor = 999999;
+
+// === CEK APAKAH HP INI SUDAH DIPAKAI ABSEN HARI INI ===
+function ambilTanggal(){
+    const sekarang = new Date();
+    return sekarang.getDate() + "/" + (sekarang.getMonth()+1) + "/" + sekarang.getFullYear();
+}
+
+async function cekHpTerpakai(){
+    const tglSekarang = ambilTanggal();
+    const snap = await dbHp.orderByChild("tgl").equalTo(tglSekarang).once("value");
+    const daftar = snap.val() || {};
+    for(let key in daftar){
+        if(daftar[key].idHp === ID_HP){
+            hpTerpakai = true;
+            return true;
+        }
+    }
+    hpTerpakai = false;
+    return false;
+}
+
+async function tandaiHpTerpakai(nama){
+    await dbHp.push({
+        idHp: ID_HP,
+        tgl: ambilTanggal(),
+        nama: nama,
+        waktu: new Date().toISOString()
+    });
+}
 
 // === CEK LOKASI SAAT HALAMAN DIBUKA ===
 if(navigator.geolocation){
@@ -240,7 +274,7 @@ function cekJamAbsen(){
 }
 
 // === KIRIM ABSEN ===
-function kirimAbsen(){
+async function kirimAbsen(){
     const nama = document.getElementById("namaPilih").value;
     const jabatan = document.getElementById("jabatanTampil").value;
     let keterangan = document.getElementById("keteranganPilih").value;
@@ -263,17 +297,24 @@ function kirimAbsen(){
             pesan.textContent = "❌ Belum masuk jam absen! Mulai jam 07:00 s/d 13:00";
             pesan.className = "pesan salah"; return;
         }
+        // CEK PEMAKAIAN HP UNTUK KEPALA DESA
+        const sudahDipakai = await cekHpTerpakai();
+        if(sudahDipakai){
+            pesan.textContent = "❌ HP INI SUDAH DIPAKAI ABSEN HARI INI! Gunakan HP sendiri!";
+            pesan.className = "pesan salah"; return;
+        }
+        await tandaiHpTerpakai(nama);
         simpanAbsen(nama, jabatan, jamCek.status, jamCek.warna);
         return;
     }
 
-    // === SAKIT atau IZIN ===> Langsung absen tanpa syarat lokasi & kode & tanpa batas jam
+    // === SAKIT atau IZIN ===> Langsung absen TANPA batas HP & lokasi & kode
     if(keterangan === "Sakit" || keterangan === "Izin"){
         simpanAbsen(nama, jabatan, keterangan, "-");
         return;
     }
 
-    // === HADIR ===> CEK JAM, LOKASI & KODE
+    // === HADIR ===> CEK JAM, LOKASI, KODE & HP BELUM DIPAKAI
     if(keterangan === "Hadir"){
         const jamCek = cekJamAbsen();
         if(!jamCek.bisaAbsen){
@@ -288,6 +329,14 @@ function kirimAbsen(){
             pesan.textContent = "❌ Kode yang dimasukkan SALAH!";
             pesan.className = "pesan salah"; return;
         }
+        // === CEK HP BELUM DIPAKAI ===
+        const sudahDipakai = await cekHpTerpakai();
+        if(sudahDipakai){
+            pesan.textContent = "❌ HP INI SUDAH DIPAKAI ABSEN HARI INI! Gunakan HP sendiri!";
+            pesan.className = "pesan salah"; return;
+        }
+        // TANDAI HP SUDAH DIPAKAI
+        await tandaiHpTerpakai(nama);
         keterangan = jamCek.status;
         const warnaJam = jamCek.warna;
         simpanAbsen(nama, jabatan, keterangan, warnaJam);
