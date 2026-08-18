@@ -40,7 +40,6 @@
     <select id="keteranganPilih" onchange="cekKeteranganAbsen()">
         <option value="">-- Pilih Keterangan --</option>
         <option value="Hadir">✅ HADIR</option>
-        <option value="Terlambat">⚠️ TERLAMBAT</option>
         <option value="Sakit">🏠 SAKIT</option>
         <option value="Izin">📝 IZIN</option>
     </select>
@@ -97,6 +96,14 @@ const KANTOR_LAT = -8.196026;
 const KANTOR_LNG = 113.1620121;
 const RADIUS_METER = 100;
 
+// === ATURAN JAM ABSENSI ===
+const JAM_BUKA = 7;      // Mulai bisa absen: 07:20
+const MENIT_BUKA = 20;
+const JAM_TEPAT = 8;     // Batas tepat waktu: 08:30
+const MENIT_TEPAT = 30;
+const JAM_TUTUP = 12;    // Tutup absen: 12:00
+const MENIT_TUTUP = 0;
+
 // === ISI PILIHAN NAMA ===
 const pilih = document.getElementById("namaPilih");
 DAFTAR.forEach((orang)=>{
@@ -131,7 +138,6 @@ function berhasilLokasi(posisi){
         kodeSaatIni = "";
         document.getElementById("infoLokasi").innerHTML = `⚠️ Di luar kantor (${Math.round(lokasiDariKantor)} meter dari kantor)`;
     }
-    // Periksa ulang keterangan yang sudah dipilih
     cekKeteranganAbsen();
 }
 
@@ -176,7 +182,6 @@ function sembunyikanKode(){
 // === CEK JENIS KETERANGAN ABSEN ===
 function cekKeteranganAbsen(){
     const keterangan = document.getElementById("keteranganPilih").value;
-    const nama = document.getElementById("namaPilih").value;
 
     // Jika SAKIT atau IZIN → TANPA KODE & TANPA LOKASI
     if(keterangan === "Sakit" || keterangan === "Izin"){
@@ -185,8 +190,8 @@ function cekKeteranganAbsen(){
         return;
     }
 
-    // Jika HADIR atau TERLAMBAT → WAJIB LOKASI & KODE
-    if(keterangan === "Hadir" || keterangan === "Terlambat"){
+    // Jika HADIR → WAJIB LOKASI & KODE
+    if(keterangan === "Hadir"){
         if(lokasiValid){
             tampilkanKode();
         } else {
@@ -214,11 +219,31 @@ function cekKhususKepala(){
     }
 }
 
+// === CEK JAM ABSEN & STATUS ===
+function cekJamAbsen(){
+    const sekarang = new Date();
+    const jam = sekarang.getHours();
+    const menit = sekarang.getMinutes();
+    const totalMenit = jam * 60 + menit;
+
+    const bukaMenit = JAM_BUKA * 60 + MENIT_BUKA;     // 07:20 = 440
+    const tepatMenit = JAM_TEPAT * 60 + MENIT_TEPAT; // 08:30 = 510
+    const tutupMenit = JAM_TUTUP * 60 + MENIT_TUTUP;  // 12:00 = 720
+
+    if(totalMenit < bukaMenit || totalMenit >= tutupMenit){
+        return {bisaAbsen: false, status: "DILUAR JAM"};
+    } else if(totalMenit <= tepatMenit){
+        return {bisaAbsen: true, status: "Hadir", warna: "hijau"};
+    } else {
+        return {bisaAbsen: true, status: "Terlambat", warna: "merah"};
+    }
+}
+
 // === KIRIM ABSEN ===
 function kirimAbsen(){
     const nama = document.getElementById("namaPilih").value;
     const jabatan = document.getElementById("jabatanTampil").value;
-    const keterangan = document.getElementById("keteranganPilih").value;
+    let keterangan = document.getElementById("keteranganPilih").value;
     const kodeYangDimasukkan = document.getElementById("masukkanKode").value.trim().toUpperCase();
     const pesan = document.getElementById("pesan");
 
@@ -233,18 +258,28 @@ function kirimAbsen(){
 
     // === ATURAN KHUSUS KEPALA DESA ===
     if(nama === "MUHAMAD HASYIM" && jabatan === "Kepala Desa"){
-        simpanAbsen(nama, jabatan, "Hadir");
+        const jamCek = cekJamAbsen();
+        if(!jamCek.bisaAbsen){
+            pesan.textContent = "❌ Belum masuk jam absen! Mulai jam 07:20";
+            pesan.className = "pesan salah"; return;
+        }
+        simpanAbsen(nama, jabatan, jamCek.status, jamCek.warna);
         return;
     }
 
-    // === SAKIT atau IZIN ===> Langsung absen tanpa syarat lokasi & kode
+    // === SAKIT atau IZIN ===> Langsung absen tanpa syarat lokasi & kode & tanpa batas jam
     if(keterangan === "Sakit" || keterangan === "Izin"){
-        simpanAbsen(nama, jabatan, keterangan);
+        simpanAbsen(nama, jabatan, keterangan, "-");
         return;
     }
 
-    // === HADIR atau TERLAMBAT ===> WAJIB di kantor & kode benar
-    if(keterangan === "Hadir" || keterangan === "Terlambat"){
+    // === HADIR ===> CEK JAM, LOKASI & KODE
+    if(keterangan === "Hadir"){
+        const jamCek = cekJamAbsen();
+        if(!jamCek.bisaAbsen){
+            pesan.textContent = "❌ Belum masuk jam absen! Mulai jam 07:20 s/d 12:00";
+            pesan.className = "pesan salah"; return;
+        }
         if(!lokasiValid || kodeSaatIni === ""){
             pesan.textContent = "❌ Kode tidak muncul! Pastikan Anda berada di kantor!";
             pesan.className = "pesan salah"; return;
@@ -253,12 +288,14 @@ function kirimAbsen(){
             pesan.textContent = "❌ Kode yang dimasukkan SALAH!";
             pesan.className = "pesan salah"; return;
         }
+        keterangan = jamCek.status;
+        const warnaJam = jamCek.warna;
+        simpanAbsen(nama, jabatan, keterangan, warnaJam);
+        return;
     }
-
-    simpanAbsen(nama, jabatan, keterangan);
 }
 
-function simpanAbsen(nama, jabatan, keterangan){
+function simpanAbsen(nama, jabatan, keterangan, warna){
     const sekarang = new Date();
     const tgl = sekarang.getDate() + "/" + (sekarang.getMonth()+1) + "/" + sekarang.getFullYear();
     const jam = sekarang.getHours() + "." + String(sekarang.getMinutes()).padStart(2,"0");
@@ -269,6 +306,7 @@ function simpanAbsen(nama, jabatan, keterangan){
         tgl: tgl,
         jam: jam,
         ket: keterangan,
+        warna: warna,
         waktu: sekarang.toISOString()
     }).then(()=>{
         const pesan = document.getElementById("pesan");
