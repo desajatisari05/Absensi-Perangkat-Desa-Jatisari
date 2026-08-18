@@ -8,8 +8,9 @@
         * {font-family: Arial, sans-serif; margin:0; padding:0; box-sizing:border-box;}
         body {background:#e8f5e9; padding:15px; font-size:14px;}
         .wadah {max-width:420px; margin:0 auto; background:#fff; border-radius:10px; padding:20px; box-shadow:0 3px 10px rgba(0,0,0,0.1);}
-        h2 {color:#2e7d32; text-align:center; margin-bottom:5px;}
-        .alamat {text-align:center; margin-bottom:20px; font-size:13px; color:#555;}
+        h2 {color:#2e7d32; text-align:center; margin-bottom:0; font-size:32px; font-weight:normal; font-style:italic;}
+        h3 {color:#2e7d32; text-align:center; margin-top:5px; margin-bottom:20px; font-size:26px; font-weight:normal; font-style:italic;}
+        .alamat {text-align:center; margin-bottom:20px; font-size:15px; color:#333;}
         label {display:block; margin:12px 0 5px; font-weight:bold; color:#333;}
         select, input {width:100%; padding:10px; font-size:15px; border:1px solid #ccc; border-radius:5px;}
         .kode-kotak {background:#fff3e0; border:2px dashed #e65100; padding:15px; text-align:center; margin:15px 0; border-radius:8px; display:none;}
@@ -26,7 +27,8 @@
 <body>
 <div class="wadah">
     <h2>ABSENSI</h2>
-    <div class="alamat">Desa Jatisari — Kecamatan Tempeh — Kabupaten Lumajang</div>
+    <h3>KEPALA DESA DAN PERANGKAT DESA</h3>
+    <div class="alamat">Desa Jatisari  Kec. Tempeh Kab. Lumajang</div>
 
     <label>Nama Lengkap:</label>
     <select id="namaPilih" onchange="cekKhususKepala()"><option value="">-- Pilih Nama Anda --</option></select>
@@ -81,7 +83,7 @@ const DAFTAR = [
     {nama:"WAHYU HARI P.", jabatan:"Kasun Krajan"}
 ];
 
-// === LOKASI KANTOR DESA JATISARI (KOORDINAT SUDAH DIISI) ===
+// === LOKASI KANTOR DESA JATISARI ===
 const KANTOR_LAT = -8.196026;
 const KANTOR_LNG = 113.1620121;
 const RADIUS_METER = 100;
@@ -137,7 +139,7 @@ function hitungJarak(lat1, lng1, lat2, lng2){
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// === BUAT KODE OTOMATIS BERDASARKAN TANGGAL + JAM ===
+// === BUAT KODE OTOMATIS ===
 function buatKodeBaru(){
     const sekarang = new Date();
     const tgl = sekarang.getDate();
@@ -171,13 +173,11 @@ function cekKhususKepala(){
         return;
     }
 
-    // KHUSUS KEPALA DESA: TIDAK PERLU KODE & LOKASI
     if(nama === "MUHAMAD HASYIM" && orang.jabatan === "Kepala Desa"){
         sembunyikanKode();
         document.getElementById("masukkanKode").value = "";
         document.getElementById("infoLokasi").innerHTML = "👑 KEPALA DESA — Bebas lokasi & tanpa kode";
     } else {
-        // Perangkat lain: tampilkan kode jika di kantor
         if(lokasiValid){
             tampilkanKode();
         } else {
@@ -198,13 +198,11 @@ function kirimAbsen(){
         pesan.className = "pesan salah"; return;
     }
 
-    // === ATURAN KHUSUS KEPALA DESA ===
     if(nama === "MUHAMAD HASYIM" && jabatan === "Kepala Desa"){
         simpanAbsen(nama, jabatan, "✅ Langsung Absen");
         return;
     }
 
-    // === PERANGKAT LAINNYA: WAJIB LOKASI & KODE ===
     if(!lokasiValid || kodeSaatIni === ""){
         pesan.textContent = "❌ Kode tidak muncul! Pastikan Anda berada di kantor!";
         pesan.className = "pesan salah"; return;
