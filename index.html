@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABSENSI PERANGKAT DESA JATISARI</title>
+    <title>ABSENSI KEPALA DESA DAN PERANGKAT DESA</title>
     <style>
         * {font-family: Arial, sans-serif; margin:0; padding:0; box-sizing:border-box;}
         body {background:#e8f5e9; padding:15px; font-size:14px;}
@@ -35,6 +35,15 @@
 
     <label>Jabatan:</label>
     <input type="text" id="jabatanTampil" readonly placeholder="Otomatis muncul">
+
+    <label>Keterangan Absen:</label>
+    <select id="keteranganPilih" onchange="cekKeteranganAbsen()">
+        <option value="">-- Pilih Keterangan --</option>
+        <option value="Hadir">✅ HADIR</option>
+        <option value="Terlambat">⚠️ TERLAMBAT</option>
+        <option value="Sakit">🏠 SAKIT</option>
+        <option value="Izin">📝 IZIN</option>
+    </select>
 
     <div class="kode-kotak" id="kotakKode">
         <div class="kode-label">✅ KODE ABSENSI ANDA:</div>
@@ -99,6 +108,7 @@ DAFTAR.forEach((orang)=>{
 
 let lokasiValid = false;
 let kodeSaatIni = "";
+let lokasiDariKantor = 999999;
 
 // === CEK LOKASI SAAT HALAMAN DIBUKA ===
 if(navigator.geolocation){
@@ -110,24 +120,25 @@ if(navigator.geolocation){
 function berhasilLokasi(posisi){
     const lat = posisi.coords.latitude;
     const lng = posisi.coords.longitude;
-    const jarak = hitungJarak(lat, lng, KANTOR_LAT, KANTOR_LNG);
+    lokasiDariKantor = hitungJarak(lat, lng, KANTOR_LAT, KANTOR_LNG);
     
-    if(jarak <= RADIUS_METER){
+    if(lokasiDariKantor <= RADIUS_METER){
         lokasiValid = true;
         buatKodeBaru();
-        document.getElementById("infoLokasi").innerHTML = `✅ Di dalam kantor (${Math.round(jarak)} meter)`;
-        tampilkanKode();
+        document.getElementById("infoLokasi").innerHTML = `✅ Di dalam kantor (${Math.round(lokasiDariKantor)} meter)`;
     } else {
         lokasiValid = false;
         kodeSaatIni = "";
-        document.getElementById("infoLokasi").innerHTML = `❌ Di luar kantor (${Math.round(jarak)} meter dari kantor)`;
-        sembunyikanKode();
+        document.getElementById("infoLokasi").innerHTML = `⚠️ Di luar kantor (${Math.round(lokasiDariKantor)} meter dari kantor)`;
     }
+    // Periksa ulang keterangan yang sudah dipilih
+    cekKeteranganAbsen();
 }
 
 function gagalLokasi(err){
     document.getElementById("infoLokasi").innerHTML = "⚠️ Tidak bisa membaca lokasi: " + err.message;
     lokasiValid = false;
+    kodeSaatIni = "";
     sembunyikanKode();
 }
 
@@ -162,6 +173,28 @@ function sembunyikanKode(){
     document.getElementById("masukkanKode").style.display = "none";
 }
 
+// === CEK JENIS KETERANGAN ABSEN ===
+function cekKeteranganAbsen(){
+    const keterangan = document.getElementById("keteranganPilih").value;
+    const nama = document.getElementById("namaPilih").value;
+
+    // Jika SAKIT atau IZIN → TANPA KODE & TANPA LOKASI
+    if(keterangan === "Sakit" || keterangan === "Izin"){
+        sembunyikanKode();
+        document.getElementById("infoLokasi").innerHTML = "🏠 Bebas lokasi — Sakit/Izin";
+        return;
+    }
+
+    // Jika HADIR atau TERLAMBAT → WAJIB LOKASI & KODE
+    if(keterangan === "Hadir" || keterangan === "Terlambat"){
+        if(lokasiValid){
+            tampilkanKode();
+        } else {
+            sembunyikanKode();
+        }
+    }
+}
+
 // === CEK KHUSUS KEPALA DESA ===
 function cekKhususKepala(){
     const nama = document.getElementById("namaPilih").value;
@@ -173,16 +206,11 @@ function cekKhususKepala(){
         return;
     }
 
+    // KHUSUS KEPALA DESA: TANPA KODE & LOKASI
     if(nama === "MUHAMAD HASYIM" && orang.jabatan === "Kepala Desa"){
+        document.getElementById("keteranganPilih").value = "Hadir";
         sembunyikanKode();
-        document.getElementById("masukkanKode").value = "";
         document.getElementById("infoLokasi").innerHTML = "👑 KEPALA DESA — Bebas lokasi & tanpa kode";
-    } else {
-        if(lokasiValid){
-            tampilkanKode();
-        } else {
-            sembunyikanKode();
-        }
     }
 }
 
@@ -190,6 +218,7 @@ function cekKhususKepala(){
 function kirimAbsen(){
     const nama = document.getElementById("namaPilih").value;
     const jabatan = document.getElementById("jabatanTampil").value;
+    const keterangan = document.getElementById("keteranganPilih").value;
     const kodeYangDimasukkan = document.getElementById("masukkanKode").value.trim().toUpperCase();
     const pesan = document.getElementById("pesan");
 
@@ -197,23 +226,36 @@ function kirimAbsen(){
         pesan.textContent = "⚠️ Silakan pilih nama Anda dulu!";
         pesan.className = "pesan salah"; return;
     }
+    if(!keterangan){
+        pesan.textContent = "⚠️ Silakan pilih keterangan absen!";
+        pesan.className = "pesan salah"; return;
+    }
 
+    // === ATURAN KHUSUS KEPALA DESA ===
     if(nama === "MUHAMAD HASYIM" && jabatan === "Kepala Desa"){
-        simpanAbsen(nama, jabatan, "✅ Langsung Absen");
+        simpanAbsen(nama, jabatan, "Hadir");
         return;
     }
 
-    if(!lokasiValid || kodeSaatIni === ""){
-        pesan.textContent = "❌ Kode tidak muncul! Pastikan Anda berada di kantor!";
-        pesan.className = "pesan salah"; return;
+    // === SAKIT atau IZIN ===> Langsung absen tanpa syarat lokasi & kode
+    if(keterangan === "Sakit" || keterangan === "Izin"){
+        simpanAbsen(nama, jabatan, keterangan);
+        return;
     }
 
-    if(kodeYangDimasukkan !== kodeSaatIni){
-        pesan.textContent = "❌ Kode yang dimasukkan SALAH!";
-        pesan.className = "pesan salah"; return;
+    // === HADIR atau TERLAMBAT ===> WAJIB di kantor & kode benar
+    if(keterangan === "Hadir" || keterangan === "Terlambat"){
+        if(!lokasiValid || kodeSaatIni === ""){
+            pesan.textContent = "❌ Kode tidak muncul! Pastikan Anda berada di kantor!";
+            pesan.className = "pesan salah"; return;
+        }
+        if(kodeYangDimasukkan !== kodeSaatIni){
+            pesan.textContent = "❌ Kode yang dimasukkan SALAH!";
+            pesan.className = "pesan salah"; return;
+        }
     }
 
-    simpanAbsen(nama, jabatan, "✅ Hadir");
+    simpanAbsen(nama, jabatan, keterangan);
 }
 
 function simpanAbsen(nama, jabatan, keterangan){
