@@ -76,16 +76,16 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("dataAbsen");
 const dbHp = firebase.database().ref("hpTerpakai");
 
-// === DAFTAR KARYAWAN ===
+// === DAFTAR PERANGKAT DESA (SUDAH DIPERBAIKI) ===
 const DAFTAR = [
     {nama:"MUHAMAD HASYIM", jabatan:"Kepala Desa"},
     {nama:"RUBIANTO", jabatan:"Sekretaris Desa"},
     {nama:"ETIK WAHYUNINGSIH", jabatan:"Kaur TU dan Umum"},
     {nama:"NURCHOIRIDA NIRWANAH", jabatan:"Kaur Keuangan"},
     {nama:"ZAINUL FITRIANDI", jabatan:"Kaur Perencanaan"},
-    {nama:"IKA NURSASI", jabatan:"Kasi Pemerintahan"},
-    {nama:"NISFUL LAILI KA J.", jabatan:"Kasi Kesra"},
-    {nama:"WUI SAHRONI", jabatan:"Kasi Pelayanan"},
+    {nama:"IKA NURSASI", jabatan:"Kasie Pemerintahan"},
+    {nama:"NISFUL LAILI KA J.", jabatan:"Kasie Kesra"},
+    {nama:"WIJI SAHRONI", jabatan:"Kasie Pelayanan"},
     {nama:"YUDI ARMINTO", jabatan:"Kasun Karang Tengah"},
     {nama:"NURSUADI", jabatan:"Kasun Cerme Wetan"},
     {nama:"ANDIK EKA SUDIAWANTO", jabatan:"Kasun Cerme Kulon"},
@@ -98,14 +98,14 @@ const KANTOR_LNG = 113.1620121;
 const RADIUS_METER = 100;
 
 // === ATURAN JAM ABSENSI ===
-const JAM_BUKA = 7;      // Mulai bisa absen: 07:00
+const JAM_BUKA = 7;
 const MENIT_BUKA = 0;
-const JAM_TEPAT = 8;     // Batas tepat waktu: 08:30
+const JAM_TEPAT = 8;
 const MENIT_TEPAT = 30;
-const JAM_TUTUP = 13;    // Tutup absen: 13:00
+const JAM_TUTUP = 13;
 const MENIT_TUTUP = 0;
 
-// === IDENTITAS HP INI ===
+// === IDENTITAS HP ===
 const ID_HP = btoa(navigator.userAgent + screen.width + screen.height).substring(0,12);
 let hpTerpakai = false;
 
@@ -122,12 +122,13 @@ let lokasiValid = false;
 let kodeSaatIni = "";
 let lokasiDariKantor = 999999;
 
-// === CEK APAKAH HP INI SUDAH DIPAKAI ABSEN HARI INI ===
+// === AMBIL TANGGAL HARI INI ===
 function ambilTanggal(){
     const sekarang = new Date();
     return sekarang.getDate() + "/" + (sekarang.getMonth()+1) + "/" + sekarang.getFullYear();
 }
 
+// === CEK HP SUDAH DIPAKAI HARI INI ===
 async function cekHpTerpakai(){
     const tglSekarang = ambilTanggal();
     const snap = await dbHp.orderByChild("tgl").equalTo(tglSekarang).once("value");
@@ -151,7 +152,7 @@ async function tandaiHpTerpakai(nama){
     });
 }
 
-// === CEK LOKASI SAAT HALAMAN DIBUKA ===
+// === CEK LOKASI ===
 if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(berhasilLokasi, gagalLokasi, {enableHighAccuracy:true, timeout:10000});
 } else {
@@ -190,7 +191,7 @@ function hitungJarak(lat1, lng1, lat2, lng2){
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// === BUAT KODE OTOMATIS ===
+// === BUAT KODE ===
 function buatKodeBaru(){
     const sekarang = new Date();
     const tgl = sekarang.getDate();
@@ -213,28 +214,21 @@ function sembunyikanKode(){
     document.getElementById("masukkanKode").style.display = "none";
 }
 
-// === CEK JENIS KETERANGAN ABSEN ===
+// === PILIH KETERANGAN ===
 function cekKeteranganAbsen(){
     const keterangan = document.getElementById("keteranganPilih").value;
-
-    // Jika SAKIT atau IZIN → TANPA KODE & TANPA LOKASI
     if(keterangan === "Sakit" || keterangan === "Izin"){
         sembunyikanKode();
         document.getElementById("infoLokasi").innerHTML = "🏠 Bebas lokasi — Sakit/Izin";
         return;
     }
-
-    // Jika HADIR → WAJIB LOKASI & KODE
     if(keterangan === "Hadir"){
-        if(lokasiValid){
-            tampilkanKode();
-        } else {
-            sembunyikanKode();
-        }
+        if(lokasiValid){ tampilkanKode(); }
+        else { sembunyikanKode(); }
     }
 }
 
-// === CEK KHUSUS KEPALA DESA ===
+// === PILIH NAMA ===
 function cekKhususKepala(){
     const nama = document.getElementById("namaPilih").value;
     const orang = DAFTAR.find(o => o.nama === nama);
@@ -244,8 +238,6 @@ function cekKhususKepala(){
         document.getElementById("jabatanTampil").value = "";
         return;
     }
-
-    // KHUSUS KEPALA DESA: TANPA KODE & LOKASI
     if(nama === "MUHAMAD HASYIM" && orang.jabatan === "Kepala Desa"){
         document.getElementById("keteranganPilih").value = "Hadir";
         sembunyikanKode();
@@ -253,16 +245,16 @@ function cekKhususKepala(){
     }
 }
 
-// === CEK JAM ABSEN & STATUS ===
+// === CEK JAM ABSEN ===
 function cekJamAbsen(){
     const sekarang = new Date();
     const jam = sekarang.getHours();
     const menit = sekarang.getMinutes();
     const totalMenit = jam * 60 + menit;
 
-    const bukaMenit = JAM_BUKA * 60 + MENIT_BUKA;     // 07:00 = 420
-    const tepatMenit = JAM_TEPAT * 60 + MENIT_TEPAT; // 08:30 = 510
-    const tutupMenit = JAM_TUTUP * 60 + MENIT_TUTUP;  // 13:00 = 780
+    const bukaMenit = JAM_BUKA * 60 + MENIT_BUKA;
+    const tepatMenit = JAM_TEPAT * 60 + MENIT_TEPAT;
+    const tutupMenit = JAM_TUTUP * 60 + MENIT_TUTUP;
 
     if(totalMenit < bukaMenit || totalMenit >= tutupMenit){
         return {bisaAbsen: false, status: "DILUAR JAM"};
@@ -273,7 +265,7 @@ function cekJamAbsen(){
     }
 }
 
-// === KIRIM ABSEN ===
+// === PROSES ABSEN ===
 async function kirimAbsen(){
     const nama = document.getElementById("namaPilih").value;
     const jabatan = document.getElementById("jabatanTampil").value;
@@ -290,14 +282,13 @@ async function kirimAbsen(){
         pesan.className = "pesan salah"; return;
     }
 
-    // === ATURAN KHUSUS KEPALA DESA ===
+    // === KEPALA DESA ===
     if(nama === "MUHAMAD HASYIM" && jabatan === "Kepala Desa"){
         const jamCek = cekJamAbsen();
         if(!jamCek.bisaAbsen){
             pesan.textContent = "❌ Belum masuk jam absen! Mulai jam 07:00 s/d 13:00";
             pesan.className = "pesan salah"; return;
         }
-        // CEK PEMAKAIAN HP UNTUK KEPALA DESA
         const sudahDipakai = await cekHpTerpakai();
         if(sudahDipakai){
             pesan.textContent = "❌ HP INI SUDAH DIPAKAI ABSEN HARI INI! Gunakan HP sendiri!";
@@ -308,13 +299,13 @@ async function kirimAbsen(){
         return;
     }
 
-    // === SAKIT atau IZIN ===> Langsung absen TANPA batas HP & lokasi & kode
+    // === SAKIT / IZIN ===
     if(keterangan === "Sakit" || keterangan === "Izin"){
         simpanAbsen(nama, jabatan, keterangan, "-");
         return;
     }
 
-    // === HADIR ===> CEK JAM, LOKASI, KODE & HP BELUM DIPAKAI
+    // === HADIR ===
     if(keterangan === "Hadir"){
         const jamCek = cekJamAbsen();
         if(!jamCek.bisaAbsen){
@@ -329,13 +320,11 @@ async function kirimAbsen(){
             pesan.textContent = "❌ Kode yang dimasukkan SALAH!";
             pesan.className = "pesan salah"; return;
         }
-        // === CEK HP BELUM DIPAKAI ===
         const sudahDipakai = await cekHpTerpakai();
         if(sudahDipakai){
             pesan.textContent = "❌ HP INI SUDAH DIPAKAI ABSEN HARI INI! Gunakan HP sendiri!";
             pesan.className = "pesan salah"; return;
         }
-        // TANDAI HP SUDAH DIPAKAI
         await tandaiHpTerpakai(nama);
         keterangan = jamCek.status;
         const warnaJam = jamCek.warna;
@@ -344,6 +333,7 @@ async function kirimAbsen(){
     }
 }
 
+// === SIMPAN DATA ABSEN ===
 function simpanAbsen(nama, jabatan, keterangan, warna){
     const sekarang = new Date();
     const tgl = sekarang.getDate() + "/" + (sekarang.getMonth()+1) + "/" + sekarang.getFullYear();
