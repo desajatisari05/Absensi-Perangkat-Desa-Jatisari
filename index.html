@@ -22,6 +22,8 @@
         .sukses {background:#e8f5e9; color:#2e7d32; display:block;}
         .salah {background:#ffebee; color:#c62828; display:block;}
         .info-lokasi {font-size:12px; margin-top:10px; color:#555;}
+        .libur-box {background:#fff3cd; border:2px solid #f57c00; padding:15px; text-align:center; border-radius:8px; margin-bottom:15px; display:none;}
+        .libur-teks {font-size:18px; font-weight:bold; color:#e65100;}
     </style>
 </head>
 <body>
@@ -30,8 +32,13 @@
     <h3>KEPALA DESA DAN PERANGKAT DESA</h3>
     <div class="alamat">Desa Jatisari  Kec. Tempeh Kab. Lumajang</div>
 
+    <div class="libur-box" id="kotakLibur">
+        <div class="libur-teks">🚫 HARI INI LIBUR NASIONAL</div>
+        <div style="margin-top:5px; color:#666;" id="namaLibur"></div>
+    </div>
+
     <label>Nama Lengkap:</label>
-    <select id="namaPilih" onchange="cekKhususKepala()"><option value="">-- Pilih Nama Anda --</option></select>
+    <select id="namaPilih" onchange="cekKhususBebasLokasi()"><option value="">-- Pilih Nama Anda --</option></select>
 
     <label>Jabatan:</label>
     <input type="text" id="jabatanTampil" readonly placeholder="Otomatis muncul">
@@ -76,20 +83,35 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("dataAbsen");
 const dbHp = firebase.database().ref("hpTerpakai");
 
-// === DAFTAR PERANGKAT DESA (SUDAH DIPERBAIKI) ===
+// === DAFTAR LIBUR NASIONAL TAHUN 2026 ===
+const DAFTAR_LIBUR = [
+    {tgl:"01/01/2026", nama:"Tahun Baru Masehi"},
+    {tgl:"29/01/2026", nama:"Tahun Baru Imlek"},
+    {tgl:"29/03/2026", nama:"Hari Raya Nyepi"},
+    {tgl:"03/04/2026", nama:"Wafat Isa Almasih"},
+    {tgl:"01/05/2026", nama:"Hari Buruh Internasional"},
+    {tgl:"14/05/2026", nama:"Kenaikan Isa Almasih"},
+    {tgl:"25/06/2026", nama:"Hari Raya Idul Adha"},
+    {tgl:"06/07/2026", nama:"Tahun Baru Islam 1447 H"},
+    {tgl:"17/08/2026", nama:"Hari Kemerdekaan RI ke-81"},
+    {tgl:"26/08/2026", nama:"Maulid Nabi Muhammad SAW"},
+    {tgl:"24/12/2026", nama:"Hari Raya Natal"}
+];
+
+// === DAFTAR PERANGKAT DESA ===
 const DAFTAR = [
-    {nama:"MUHAMAD HASYIM", jabatan:"Kepala Desa"},
-    {nama:"RUBIANTO", jabatan:"Sekretaris Desa"},
-    {nama:"ETIK WAHYUNINGSIH", jabatan:"Kaur TU dan Umum"},
-    {nama:"NURCHOIRIDA NIRWANAH", jabatan:"Kaur Keuangan"},
-    {nama:"ZAINUL FITRIANDI", jabatan:"Kaur Perencanaan"},
-    {nama:"IKA NURSASI", jabatan:"Kasie Pemerintahan"},
-    {nama:"NISFUL LAILI KA J.", jabatan:"Kasie Kesra"},
-    {nama:"WIJI SAHRONI", jabatan:"Kasie Pelayanan"},
-    {nama:"YUDI ARMINTO", jabatan:"Kasun Karang Tengah"},
-    {nama:"NURSUADI", jabatan:"Kasun Cerme Wetan"},
-    {nama:"ANDIK EKA SUDIAWANTO", jabatan:"Kasun Cerme Kulon"},
-    {nama:"WAHYU HARI P.", jabatan:"Kasun Krajan"}
+    {nama:"MUHAMAD HASYIM", jabatan:"Kepala Desa", bebasLokasi:true},
+    {nama:"RUBIANTO", jabatan:"Sekretaris Desa", bebasLokasi:false},
+    {nama:"ETIK WAHYUNINGSIH", jabatan:"Kaur TU dan Umum", bebasLokasi:false},
+    {nama:"NURCHOIRIDA NIRWANAH", jabatan:"Kaur Keuangan", bebasLokasi:false},
+    {nama:"ZAINUL FITRIANDI", jabatan:"Kaur Perencanaan", bebasLokasi:false},
+    {nama:"IKA NURSASI", jabatan:"Kasie Pemerintahan", bebasLokasi:false},
+    {nama:"NISFUL LAILI KA J.", jabatan:"Kasie Kesra", bebasLokasi:false},
+    {nama:"WIJI SAHRONI", jabatan:"Kasie Pelayanan", bebasLokasi:false},
+    {nama:"YUDI ARMINTO", jabatan:"Kasun Karang Tengah", bebasLokasi:true},
+    {nama:"NURSUADI", jabatan:"Kasun Cerme Wetan", bebasLokasi:true},
+    {nama:"ANDIK EKA SUDIAWANTO", jabatan:"Kasun Cerme Kulon", bebasLokasi:true},
+    {nama:"WAHYU HARI P.", jabatan:"Kasun Krajan", bebasLokasi:true}
 ];
 
 // === LOKASI KANTOR DESA JATISARI ===
@@ -108,16 +130,6 @@ const MENIT_TUTUP = 0;
 // === IDENTITAS HP ===
 const ID_HP = btoa(navigator.userAgent + screen.width + screen.height).substring(0,12);
 let hpTerpakai = false;
-
-// === ISI PILIHAN NAMA ===
-const pilih = document.getElementById("namaPilih");
-DAFTAR.forEach((orang)=>{
-    let opsi = document.createElement("option");
-    opsi.value = orang.nama;
-    opsi.textContent = orang.nama;
-    pilih.appendChild(opsi);
-});
-
 let lokasiValid = false;
 let kodeSaatIni = "";
 let lokasiDariKantor = 999999;
@@ -127,6 +139,34 @@ function ambilTanggal(){
     const sekarang = new Date();
     return sekarang.getDate() + "/" + (sekarang.getMonth()+1) + "/" + sekarang.getFullYear();
 }
+
+// === CEK APAKAH HARI INI LIBUR ===
+function cekHariLibur(){
+    const tglSekarang = ambilTanggal();
+    for(let i=0; i<DAFTAR_LIBUR.length; i++){
+        if(DAFTAR_LIBUR[i].tgl === tglSekarang){
+            return DAFTAR_LIBUR[i].nama;
+        }
+    }
+    return false;
+}
+
+// === CEK LIBUR SAAT HALAMAN DIBUKA ===
+const namaHariLibur = cekHariLibur();
+if(namaHariLibur){
+    document.getElementById("kotakLibur").style.display = "block";
+    document.getElementById("namaLibur").textContent = namaHariLibur;
+    document.getElementById("tombolAbsen").disabled = true;
+}
+
+// === ISI PILIHAN NAMA ===
+const pilih = document.getElementById("namaPilih");
+DAFTAR.forEach((orang)=>{
+    let opsi = document.createElement("option");
+    opsi.value = orang.nama;
+    opsi.textContent = orang.nama;
+    pilih.appendChild(opsi);
+});
 
 // === CEK HP SUDAH DIPAKAI HARI INI ===
 async function cekHpTerpakai(){
@@ -217,31 +257,42 @@ function sembunyikanKode(){
 // === PILIH KETERANGAN ===
 function cekKeteranganAbsen(){
     const keterangan = document.getElementById("keteranganPilih").value;
+    const nama = document.getElementById("namaPilih").value;
+    const orang = DAFTAR.find(o => o.nama === nama);
+    const bebasLokasi = orang ? orang.bebasLokasi : false;
+
     if(keterangan === "Sakit" || keterangan === "Izin"){
         sembunyikanKode();
         document.getElementById("infoLokasi").innerHTML = "🏠 Bebas lokasi — Sakit/Izin";
         return;
     }
     if(keterangan === "Hadir"){
-        if(lokasiValid){ tampilkanKode(); }
-        else { sembunyikanKode(); }
+        if(bebasLokasi){
+            sembunyikanKode();
+            document.getElementById("infoLokasi").innerHTML = "👑 Bebas lokasi — Tidak perlu ke kantor";
+        } else if(lokasiValid){
+            tampilkanKode();
+        } else {
+            sembunyikanKode();
+        }
     }
 }
 
 // === PILIH NAMA ===
-function cekKhususKepala(){
+function cekKhususBebasLokasi(){
     const nama = document.getElementById("namaPilih").value;
     const orang = DAFTAR.find(o => o.nama === nama);
     if(orang){
         document.getElementById("jabatanTampil").value = orang.jabatan;
+        if(orang.bebasLokasi){
+            document.getElementById("keteranganPilih").value = "Hadir";
+            sembunyikanKode();
+            document.getElementById("infoLokasi").innerHTML = "👑 Bebas lokasi — Tidak perlu ke kantor";
+        } else {
+            cekKeteranganAbsen();
+        }
     } else {
         document.getElementById("jabatanTampil").value = "";
-        return;
-    }
-    if(nama === "MUHAMAD HASYIM" && orang.jabatan === "Kepala Desa"){
-        document.getElementById("keteranganPilih").value = "Hadir";
-        sembunyikanKode();
-        document.getElementById("infoLokasi").innerHTML = "👑 KEPALA DESA — Bebas lokasi & tanpa kode";
     }
 }
 
@@ -272,6 +323,14 @@ async function kirimAbsen(){
     let keterangan = document.getElementById("keteranganPilih").value;
     const kodeYangDimasukkan = document.getElementById("masukkanKode").value.trim().toUpperCase();
     const pesan = document.getElementById("pesan");
+    const orang = DAFTAR.find(o => o.nama === nama);
+    const bebasLokasi = orang ? orang.bebasLokasi : false;
+
+    // === CEK HARI LIBUR ===
+    if(cekHariLibur()){
+        pesan.textContent = "🚫 HARI INI LIBUR NASIONAL — TIDAK ADA ABSENSI";
+        pesan.className = "pesan salah"; return;
+    }
 
     if(!nama){
         pesan.textContent = "⚠️ Silakan pilih nama Anda dulu!";
@@ -280,23 +339,6 @@ async function kirimAbsen(){
     if(!keterangan){
         pesan.textContent = "⚠️ Silakan pilih keterangan absen!";
         pesan.className = "pesan salah"; return;
-    }
-
-    // === KEPALA DESA ===
-    if(nama === "MUHAMAD HASYIM" && jabatan === "Kepala Desa"){
-        const jamCek = cekJamAbsen();
-        if(!jamCek.bisaAbsen){
-            pesan.textContent = "❌ Belum masuk jam absen! Mulai jam 07:00 s/d 13:00";
-            pesan.className = "pesan salah"; return;
-        }
-        const sudahDipakai = await cekHpTerpakai();
-        if(sudahDipakai){
-            pesan.textContent = "❌ HP INI SUDAH DIPAKAI ABSEN HARI INI! Gunakan HP sendiri!";
-            pesan.className = "pesan salah"; return;
-        }
-        await tandaiHpTerpakai(nama);
-        simpanAbsen(nama, jabatan, jamCek.status, jamCek.warna);
-        return;
     }
 
     // === SAKIT / IZIN ===
@@ -312,6 +354,20 @@ async function kirimAbsen(){
             pesan.textContent = "❌ Belum masuk jam absen! Mulai jam 07:00 s/d 13:00";
             pesan.className = "pesan salah"; return;
         }
+
+        // === KEPALA DESA & SEMUA KASUN — Bebas lokasi & tanpa kode ===
+        if(bebasLokasi){
+            const sudahDipakai = await cekHpTerpakai();
+            if(sudahDipakai){
+                pesan.textContent = "❌ HP INI SUDAH DIPAKAI ABSEN HARI INI! Gunakan HP sendiri!";
+                pesan.className = "pesan salah"; return;
+            }
+            await tandaiHpTerpakai(nama);
+            simpanAbsen(nama, jabatan, jamCek.status, jamCek.warna);
+            return;
+        }
+
+        // === PERANGKAT DI KANTOR — Wajib lokasi & kode ===
         if(!lokasiValid || kodeSaatIni === ""){
             pesan.textContent = "❌ Kode tidak muncul! Pastikan Anda berada di kantor!";
             pesan.className = "pesan salah"; return;
