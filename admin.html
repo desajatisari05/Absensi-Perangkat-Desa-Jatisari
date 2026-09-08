@@ -8,8 +8,8 @@
         * {font-family: Arial, sans-serif; margin:0; padding:0; box-sizing:border-box;}
         body {background:#f1f8e9; padding:8px; font-size:13px;}
         .wadah {width:100%; margin:0 auto; background:#fff; padding:5px;}
-        h1 {text-align:center; font-size:17px; color:#2e7d32; margin-bottom:2px;}
-        h2 {text-align:center; font-size:13px; color:#333; margin-bottom:6px; font-weight:normal;}
+        h1 {text-align:center; font-size:17px; color:#000; margin-bottom:2px; font-weight:bold;}
+        h2 {text-align:center; font-size:14px; color:#000; margin-bottom:6px; font-weight:normal;}
         .pilih-bulan {text-align:center; margin-bottom:8px;}
         select {padding:4px 8px; font-size:13px; border-radius:4px; border:1px solid #ccc;}
         .status {text-align:center; margin-bottom:6px; color:#2e7d32; font-weight:bold; font-size:12px;}
@@ -20,17 +20,20 @@
         .btn-hapus {background:#f44336; color:#fff;}
         button:hover {opacity:0.9;}
         table {border-collapse:collapse; width:100%; margin-top:3px; table-layout:fixed;}
-        th, td {border:1px solid #000; padding:4px 1px; text-align:center; vertical-align:middle; font-size:11px;}
-        th {background:#c8e6c9; font-weight:bold;}
-        td:nth-child(2) {text-align:left; padding-left:4px;}
-        th:nth-child(1), td:nth-child(1) {width:3%;}
-        th:nth-child(2) {width:15%;}
-        th:nth-child(3) {width:10%;}
+        th, td {border:1px solid #000; padding:8px 2px; text-align:center; vertical-align:middle;}
+        th {background:#f0f0f0; font-weight:bold; font-size:12.5px;}
+        td {font-size:12.5px;}
+        td:nth-child(2) {text-align:left; padding-left:6px;}
+        th:nth-child(1), td:nth-child(1) {width:3.5%;}
+        th:nth-child(2) {width:16%;}
+        th:nth-child(3) {width:11%;}
         .tgl-merah {color:#c62828; font-weight:bold; background:#ffebee;}
         .hari-merah {color:#c62828; font-weight:bold; background:#ffebee;}
         .hadir {color:green; font-weight:bold;}
         .terlambat {color:red; font-weight:bold;}
         .kosong {background:#fff;}
+        .tgl-header {font-size:13px; letter-spacing:3px;}
+        .minggu-huruf {font-weight:bold; color:#c62828; background:#ffebee;}
         @media print {
             .tombol, .pilih-bulan, .status {display:none;}
             body {background:#fff; padding:0;}
@@ -133,12 +136,6 @@ function jumlahTanggal(b,t){
     return new Date(t,b,0).getDate();
 }
 
-// === AMBIL HARI DARI TANGGAL ===
-function hariDariTanggal(tg,bl,th){
-    const hari = ["M","S","S","R","K","J","S"];
-    return hari[new Date(th,bl-1,tg).getDay()];
-}
-
 // === CEK APAKAH TANGGAL MERAH ===
 function cekApakahMerah(tg,bl,th){
     const kunci = `${th}-${String(bl).padStart(2,"0")}-${String(tg).padStart(2,"0")}`;
@@ -148,44 +145,56 @@ function cekApakahMerah(tg,bl,th){
     return false;
 }
 
+// === CEK APAKAH HARI MINGGU ===
+function cekApakahMinggu(tg,bl,th){
+    return new Date(th,bl-1,tg).getDay() === 0;
+}
+
 // === BUAT TABEL ===
 function buatTabel(){
     const jmlTgl = jumlahTanggal(bln,thn);
     const kepala = document.getElementById("bagianKepala");
     const isi = document.getElementById("bagianIsi");
 
-    let barisTgl = "<tr><th rowspan='2'>NO</th><th rowspan='2'>NAMA</th><th rowspan='2'>JABATAN</th>";
-    let barisHari = "<tr>";
-
+    // Baris 1: TANGGAL digabung menyilang
+    let barisJudul = `<tr><th rowspan='2'>NO</th><th rowspan='2'>NAMA</th><th rowspan='2'>JABATAN</th>`;
     for(let t=1; t<=jmlTgl; t++){
         const merah = cekApakahMerah(t,bln,thn);
         if(merah){
-            barisTgl += `<th class="tgl-merah">${t}</th>`;
+            barisJudul += `<th class="tgl-merah"></th>`;
         } else {
-            barisTgl += `<th>${t}</th>`;
+            barisJudul += `<th></th>`;
         }
     }
-    barisTgl += "</tr>";
+    barisJudul += "</tr>";
 
+    // Baris 2: angka tanggal
+    let barisAngka = "<tr>";
     for(let t=1; t<=jmlTgl; t++){
-        const hari = hariDariTanggal(t,bln,thn);
         const merah = cekApakahMerah(t,bln,thn);
         if(merah){
-            barisHari += `<th class="hari-merah">${hari}</th>`;
+            barisAngka += `<th class="tgl-merah">${t}</th>`;
         } else {
-            barisHari += `<th>${hari}</th>`;
+            barisAngka += `<th>${t}</th>`;
         }
     }
-    barisHari += "</tr>";
+    barisAngka += "</tr>";
 
-    kepala.innerHTML = barisTgl + barisHari;
+    kepala.innerHTML = barisJudul + barisAngka;
 
+    // Isi tabel per orang
     let barisIsi = "";
     DAFTAR.forEach((orang, idx)=>{
         barisIsi += `<tr><td>${idx+1}</td><td>${orang.nama}</td><td>${orang.jabatan}</td>`;
         for(let t=1; t<=jmlTgl; t++){
             const merah = cekApakahMerah(t,bln,thn);
-            if(merah){
+            const minggu = cekApakahMinggu(t,bln,thn);
+            if(minggu){
+                // Tulis M-I-N-G-G-U huruf per huruf ke bawah
+                const huruf = ["M","I","N","G","G","U"];
+                const baris = idx % 6;
+                barisIsi += `<td class="minggu-huruf">${huruf[baris]||""}</td>`;
+            } else if(merah){
                 barisIsi += `<td class="hari-merah"></td>`;
             } else {
                 barisIsi += `<td id="sel-${idx}-${t}" class="kosong"></td>`;
@@ -221,6 +230,7 @@ function isiKeTabel(){
     const jmlTgl = jumlahTanggal(bln,thn);
     DAFTAR.forEach((orang, idx)=>{
         for(let t=1; t<=jmlTgl; t++){
+            if(cekApakahMinggu(t,bln,thn)) continue;
             const sel = document.getElementById(`sel-${idx}-${t}`);
             if(!sel) continue;
             const kunci = `${orang.nama}-${t}`;
@@ -252,13 +262,6 @@ function unduhExcel(){
     csv += `Bulan: ${bulanTerpilih}\r\n\r\n`;
     csv += "NO\tNAMA\tJABATAN";
     for(let t=1; t<=jmlTgl; t++) csv += "\t" + t;
-    csv += "\r\n";
-
-    const hari = ["M","S","S","R","K","J","S"];
-    csv += "\t\t";
-    for(let t=1; t<=jmlTgl; t++){
-        csv += "\t" + hariDariTanggal(t,bln,thn);
-    }
     csv += "\r\n";
 
     DAFTAR.forEach((orang, idx)=>{
@@ -304,18 +307,19 @@ function cetakBerkas(){
             h2{text-align:center; font-size:17px; font-weight:bold; margin-bottom:2px;}
             h3{text-align:center; font-size:13px; font-weight:normal; margin-bottom:4px;}
             table{border-collapse:collapse; width:100%; table-layout:fixed;}
-            th,td{border:1px solid #000; padding:5px 1px; text-align:center; vertical-align:middle; font-size:10.5px;}
+            th,td{border:1px solid #000; padding:9px 1px; text-align:center; vertical-align:middle; font-size:12.5px;}
             th{background:#f0f0f0; font-weight:bold;}
-            td:nth-child(2){text-align:left; padding-left:4px;}
-            th:nth-child(1), td:nth-child(1){width:3%;}
-            th:nth-child(2){width:15%;}
-            th:nth-child(3){width:10%;}
+            td:nth-child(2){text-align:left; padding-left:6px;}
+            th:nth-child(1), td:nth-child(1){width:3.5%;}
+            th:nth-child(2){width:16%;}
+            th:nth-child(3){width:11%;}
             .tgl-merah{color:red; font-weight:bold; background:#ffebee;}
             .hari-merah{color:red; font-weight:bold; background:#ffebee;}
+            .minggu-huruf{color:red; font-weight:bold; background:#ffebee;}
             .hadir{color:green; font-weight:bold;}
             .terlambat{color:red; font-weight:bold;}
-            .ttd{border:none; margin-top:8px; width:100%;}
-            .ttd td{border:none; width:33%; text-align:center; padding-top:20px; font-size:11px;}
+            .ttd{border:none; margin-top:15px; width:100%;}
+            .ttd td{border:none; text-align:right; padding-right:15px; font-size:12px;}
             .btn{padding:10px 20px; font-size:14px; cursor:pointer; margin:8px auto; display:block;}
             @page {size:215mm 330mm landscape; margin:0.3cm;}
             @media print{.btn{display:none;}}
@@ -329,17 +333,24 @@ function cetakBerkas(){
             <thead>
                 <tr><th rowspan="2">NO</th><th rowspan="2">NAMA</th><th rowspan="2">JABATAN</th>${Array.from({length:jmlTgl},(_,i)=>{
                     const t=i+1; const merah=cekApakahMerah(t,bln,thn);
-                    return merah?`<th class="tgl-merah">${t}</th>`:`<th>${t}</th>`;
+                    return merah?`<th class="tgl-merah"></th>`:`<th></th>`;
                 }).join("")}</tr>
                 <tr>${Array.from({length:jmlTgl},(_,i)=>{
-                    const t=i+1; const h=hariDariTanggal(t,bln,thn); const merah=cekApakahMerah(t,bln,thn);
-                    return merah?`<th class="hari-merah">${h}</th>`:`<th>${h}</th>`;
+                    const t=i+1; const merah=cekApakahMerah(t,bln,thn);
+                    return merah?`<th class="tgl-merah">${t}</th>`:`<th>${t}</th>`;
                 }).join("")}</tr>
             </thead>
             <tbody>
                 ${DAFTAR.map((orang,idx)=>`<tr><td>${idx+1}</td><td>${orang.nama}</td><td>${orang.jabatan}</td>${
                     Array.from({length:jmlTgl},(_,i)=>{
-                        const t=i+1; const merah=cekApakahMerah(t,bln,thn);
+                        const t=i+1; 
+                        const minggu = cekApakahMinggu(t,bln,thn);
+                        const merah = cekApakahMerah(t,bln,thn);
+                        if(minggu){
+                            const huruf = ["M","I","N","G","G","U"];
+                            const baris = idx % 6;
+                            return `<td class="minggu-huruf">${huruf[baris]||""}</td>`;
+                        }
                         if(merah) return `<td class="hari-merah"></td>`;
                         const kunci = `${orang.nama}-${t}`;
                         const d=dataAbsen[kunci];
@@ -355,9 +366,7 @@ function cetakBerkas(){
         </table>
         <table class="ttd">
             <tr>
-                <td style="text-align:left; padding-left:10px;">Mengetahui,<br><br>___________________________</td>
-                <td></td>
-                <td style="text-align:right; padding-right:10px;">Desa Jatisari, ............ ${thn}<br><br>___________________________</td>
+                <td>Desa Jatisari, ............ ${thn}<br><br>KEPALA DESA JATISARI<br><br>___________________________<br>MUHAMAD HASYIM</td>
             </tr>
         </table>
         <button class="btn" onclick="window.print()">🖨️ KLIK DISINI UNTUK MENCETAK</button>
