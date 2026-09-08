@@ -23,17 +23,16 @@
         th, td {border:1px solid #333; padding:4px 3px; text-align:center; vertical-align:middle; font-size:12px;}
         th {background:#c8e6c9; font-weight:bold;}
         td:nth-child(2) {text-align:left; padding-left:6px;}
-        .libur {background:#ffebee; color:#c62828; font-weight:bold;}
-        .minggu {background:#ffebee; color:#c62828; font-weight:bold;}
+        .tgl-merah {color:#c62828; font-weight:bold; background:#ffebee;}
+        .hari-merah {color:#c62828; font-weight:bold; background:#ffebee;}
         .hadir {color:green; font-weight:bold;}
         .terlambat {color:red; font-weight:bold;}
         .kosong {background:#fff;}
-        .tgl-merah {color:#c62828; font-weight:bold;}
-        .huruf-minggu {color:#c62828; font-weight:bold;}
         @media print {
             .tombol, .pilih-bulan, .status {display:none;}
             body {background:#fff;}
             .wadah {box-shadow:none; padding:0;}
+            @page {size:A4 landscape; margin:0.8cm;}
         }
     </style>
 </head>
@@ -137,12 +136,12 @@ function hariDariTanggal(tg,bl,th){
     return hari[new Date(th,bl-1,tg).getDay()];
 }
 
-// === CEK TANGGAL MERAH ===
-function cekTanggalMerah(tg,bl,th){
+// === CEK APAKAH TANGGAL MERAH ===
+function cekApakahMerah(tg,bl,th){
     const kunci = `${th}-${String(bl).padStart(2,"0")}-${String(tg).padStart(2,"0")}`;
-    if(DAFTAR_LIBUR[kunci]) return DAFTAR_LIBUR[kunci];
+    if(DAFTAR_LIBUR[kunci]) return true;
     const hariMinggu = new Date(th,bl-1,tg).getDay();
-    if(hariMinggu === 0) return "MINGGU";
+    if(hariMinggu === 0) return true;
     return false;
 }
 
@@ -152,31 +151,39 @@ function buatTabel(){
     const kepala = document.getElementById("bagianKepala");
     const isi = document.getElementById("bagianIsi");
 
-    let baris1 = "<tr><th rowspan='2'>NO</th><th rowspan='2'>NAMA</th><th rowspan='2'>JABATAN</th>";
-    let baris2 = "<tr>";
+    let barisTgl = "<tr><th rowspan='2'>NO</th><th rowspan='2'>NAMA</th><th rowspan='2'>JABATAN</th>";
+    let barisHari = "<tr>";
+
+    for(let t=1; t<=jmlTgl; t++){
+        const merah = cekApakahMerah(t,bln,thn);
+        if(merah){
+            barisTgl += `<th class="tgl-merah">${t}</th>`;
+        } else {
+            barisTgl += `<th>${t}</th>`;
+        }
+    }
+    barisTgl += "</tr>";
 
     for(let t=1; t<=jmlTgl; t++){
         const hari = hariDariTanggal(t,bln,thn);
-        const libur = cekTanggalMerah(t,bln,thn);
-        if(libur){
-            baris1 += `<th class="tgl-merah">${t}</th>`;
-            baris2 += `<th class="huruf-minggu">${hari}</th>`;
+        const merah = cekApakahMerah(t,bln,thn);
+        if(merah){
+            barisHari += `<th class="hari-merah">${hari}</th>`;
         } else {
-            baris1 += `<th>${t}</th>`;
-            baris2 += `<th>${hari}</th>`;
+            barisHari += `<th>${hari}</th>`;
         }
     }
-    baris1 += "</tr>";
-    baris2 += "</tr>";
-    kepala.innerHTML = baris1 + baris2;
+    barisHari += "</tr>";
+
+    kepala.innerHTML = barisTgl + barisHari;
 
     let barisIsi = "";
     DAFTAR.forEach((orang, idx)=>{
         barisIsi += `<tr><td>${idx+1}</td><td>${orang.nama}</td><td>${orang.jabatan}</td>`;
         for(let t=1; t<=jmlTgl; t++){
-            const libur = cekTanggalMerah(t,bln,thn);
-            if(libur){
-                barisIsi += `<td class="minggu">${libur === "MINGGU" ? "M<br>I<br>N<br>G<br>U" : libur.substring(0,1)}</td>`;
+            const merah = cekApakahMerah(t,bln,thn);
+            if(merah){
+                barisIsi += `<td class="hari-merah"></td>`;
             } else {
                 barisIsi += `<td id="sel-${idx}-${t}" class="kosong"></td>`;
             }
@@ -247,18 +254,16 @@ function unduhExcel(){
     const hari = ["M","S","S","R","K","J","S"];
     csv += "\t\t";
     for(let t=1; t<=jmlTgl; t++){
-        const h = hariDariTanggal(t,bln,thn);
-        const libur = cekTanggalMerah(t,bln,thn);
-        csv += "\t" + (libur ? "**"+h+"**" : h);
+        csv += "\t" + hariDariTanggal(t,bln,thn);
     }
     csv += "\r\n";
 
     DAFTAR.forEach((orang, idx)=>{
         csv += `${idx+1}\t${orang.nama}\t${orang.jabatan}`;
         for(let t=1; t<=jmlTgl; t++){
-            const libur = cekTanggalMerah(t,bln,thn);
-            if(libur){
-                csv += "\t" + (libur === "MINGGU" ? "MINGGU" : libur);
+            const merah = cekApakahMerah(t,bln,thn);
+            if(merah){
+                csv += "\tLIBUR";
             } else {
                 const kunci = `${orang.nama}-${t}`;
                 const d = dataAbsen[kunci];
@@ -292,21 +297,21 @@ function cetakBerkas(){
         <title>Absensi Desa Jatisari - ${bulanTerpilih}</title>
         <style>
             *{font-family:Arial,sans-serif;}
-            body{padding:20px; font-size:12px;}
+            body{padding:15px; font-size:11px;}
             h2{text-align:center; font-size:16px; font-weight:bold; margin-bottom:5px;}
-            h3{text-align:center; font-size:13px; font-weight:normal; margin-bottom:15px;}
+            h3{text-align:center; font-size:13px; font-weight:normal; margin-bottom:10px;}
             table{border-collapse:collapse; width:100%;}
-            th,td{border:1px solid #000; padding:4px 3px; text-align:center; vertical-align:middle; font-size:11px;}
+            th,td{border:1px solid #000; padding:3px 2px; text-align:center; vertical-align:middle; font-size:10px;}
             th{background:#f0f0f0;}
-            td:nth-child(2){text-align:left; padding-left:5px;}
-            .tgl-merah{color:red; font-weight:bold;}
-            .huruf-minggu{color:red; font-weight:bold;}
-            .minggu{background:#ffebee; color:red; font-weight:bold;}
+            td:nth-child(2){text-align:left; padding-left:4px;}
+            .tgl-merah{color:red; font-weight:bold; background:#ffebee;}
+            .hari-merah{color:red; font-weight:bold; background:#ffebee;}
             .hadir{color:green; font-weight:bold;}
             .terlambat{color:red; font-weight:bold;}
             .ttd{border:none; margin-top:30px;}
             .ttd td{border:none; width:33%; text-align:center; padding-top:40px;}
-            .btn{padding:10px 20px; font-size:14px; cursor:pointer; margin:20px auto; display:block;}
+            .btn{padding:10px 20px; font-size:14px; cursor:pointer; margin:15px auto; display:block;}
+            @page {size:A4 landscape; margin:0.7cm;}
             @media print{.btn{display:none;}}
         </style>
     </head>
@@ -317,19 +322,19 @@ function cetakBerkas(){
         <table>
             <thead>
                 <tr><th rowspan="2">NO</th><th rowspan="2">NAMA</th><th rowspan="2">JABATAN</th>${Array.from({length:jmlTgl},(_,i)=>{
-                    const t=i+1; const lib=cekTanggalMerah(t,bln,thn);
-                    return lib?`<th class="tgl-merah">${t}</th>`:`<th>${t}</th>`;
+                    const t=i+1; const merah=cekApakahMerah(t,bln,thn);
+                    return merah?`<th class="tgl-merah">${t}</th>`:`<th>${t}</th>`;
                 }).join("")}</tr>
                 <tr>${Array.from({length:jmlTgl},(_,i)=>{
-                    const t=i+1; const h=hariDariTanggal(t,bln,thn); const lib=cekTanggalMerah(t,bln,thn);
-                    return lib?`<th class="huruf-minggu">${h}</th>`:`<th>${h}</th>`;
+                    const t=i+1; const h=hariDariTanggal(t,bln,thn); const merah=cekApakahMerah(t,bln,thn);
+                    return merah?`<th class="hari-merah">${h}</th>`:`<th>${h}</th>`;
                 }).join("")}</tr>
             </thead>
             <tbody>
                 ${DAFTAR.map((orang,idx)=>`<tr><td>${idx+1}</td><td>${orang.nama}</td><td>${orang.jabatan}</td>${
                     Array.from({length:jmlTgl},(_,i)=>{
-                        const t=i+1; const lib=cekTanggalMerah(t,bln,thn);
-                        if(lib) return lib==="MINGGU"?`<td class="minggu">M<br>I<br>N<br>G<br>U</td>`:`<td class="minggu">${lib.substring(0,1)}</td>`;
+                        const t=i+1; const merah=cekApakahMerah(t,bln,thn);
+                        if(merah) return `<td class="hari-merah"></td>`;
                         const kunci = `${orang.nama}-${t}`;
                         const d=dataAbsen[kunci];
                         if(d){
