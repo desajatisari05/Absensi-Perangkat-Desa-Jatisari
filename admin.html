@@ -3,75 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADMIN ABSENSI - TABEL BULANAN</title>
+    <title>ADMIN - ABSENSI KEPALA DESA DAN PERANGKAT DESA</title>
     <style>
         * {font-family: Arial, sans-serif; margin:0; padding:0; box-sizing:border-box;}
-        body {background:#f0f4f8; padding:15px; font-size:13px;}
-        .wadah {max-width:100%; margin:0 auto; background:#fff; border-radius:8px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.1); overflow-x:auto;}
-        h2 {color:#000; text-align:center; margin-bottom:5px; font-size:16px; font-weight:bold; line-height:1.4;}
-        .bulan-pilih {text-align:center; margin-bottom:15px;}
-        .bulan-pilih select {padding:6px; font-size:14px; border-radius:4px; border:1px solid #ccc;}
-        .status {padding:8px; border-radius:4px; font-weight:bold; text-align:center; margin-bottom:12px; font-size:14px;}
-        .terhubung {color:green; background:#e8f5e9;}
-        .putus {color:red; background:#ffebee;}
-        table {border-collapse:collapse; width:100%; white-space:nowrap;}
-        th, td {border:1px solid #000; padding:2px 2px; text-align:center; vertical-align:middle; height:32px;}
-        th {background:#f5f5f5; color:#000; font-size:12px; font-weight:bold;}
-        th.libur {background:#ffebee; color:#c62828; font-weight:bold;}
-        td {font-size:13px;}
-        .nama {text-align:left; white-space:nowrap; min-width:220px; font-weight:500; padding:3px 6px;}
-        .no {width:35px;}
-        .tg {width:38px;}
-        .hadir {background:#e8f5e9; color:#2e7d32; font-weight:bold;}
-        .terlambat {background:#fff3e0; color:#e65100; font-weight:bold;}
-        .sakit {background:#f3e5f5; color:#7b1fa2; font-weight:bold;}
-        .izin {background:#e3f2fd; color:#1565c0; font-weight:bold;}
-        .kosong {color:#aaa;}
-        .huruf-libur {color:#c62828; font-weight:bold; font-size:14px;}
-        .tombol-bar {text-align:center; margin-bottom:12px;}
-        button {padding:8px 16px; border:none; border-radius:4px; cursor:pointer; font-size:14px; margin:0 5px; font-weight:bold;}
-        .btn-hijau {background:#2e7d32; color:#fff;}
-        .btn-merah {background:#c62828; color:#fff;}
+        body {background:#f1f8e9; padding:15px; font-size:13px;}
+        .wadah {max-width:1200px; margin:0 auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+        h1 {text-align:center; font-size:18px; color:#2e7d32; margin-bottom:5px;}
+        h2 {text-align:center; font-size:14px; color:#333; margin-bottom:15px; font-weight:normal;}
+        .pilih-bulan {text-align:center; margin-bottom:15px;}
+        select {padding:6px 12px; font-size:14px; border-radius:4px; border:1px solid #ccc;}
+        .status {text-align:center; margin-bottom:10px; color:#2e7d32; font-weight:bold;}
+        .tombol {text-align:center; margin:15px 0;}
+        button {padding:8px 16px; margin:3px; font-size:13px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;}
+        .btn-excel {background:#4CAF50; color:#fff;}
+        .btn-cetak {background:#2196F3; color:#fff;}
+        .btn-hapus {background:#f44336; color:#fff;}
+        button:hover {opacity:0.9;}
+        table {border-collapse:collapse; width:100%; margin-top:10px;}
+        th, td {border:1px solid #333; padding:4px 3px; text-align:center; vertical-align:middle; font-size:12px;}
+        th {background:#c8e6c9; font-weight:bold;}
+        td:nth-child(2) {text-align:left; padding-left:6px;}
+        .libur {background:#ffebee; color:#c62828; font-weight:bold;}
+        .minggu {background:#ffebee; color:#c62828; font-weight:bold;}
+        .hadir {color:green; font-weight:bold;}
+        .terlambat {color:red; font-weight:bold;}
+        .kosong {background:#fff;}
+        .tgl-merah {color:#c62828; font-weight:bold;}
+        .huruf-minggu {color:#c62828; font-weight:bold;}
+        @media print {
+            .tombol, .pilih-bulan, .status {display:none;}
+            body {background:#fff;}
+            .wadah {box-shadow:none; padding:0;}
+        }
     </style>
 </head>
 <body>
 <div class="wadah">
-    <h2>ABSENSI KEPALA DESA DAN PERANGKAT DESA JATISARI<br>KECAMATAN TEMPEH KABUPATEN LUMAJANG</h2>
+    <h1>ABSENSI KEPALA DESA DAN PERANGKAT DESA JATISARI</h1>
+    <h2>KECAMATAN TEMPEH KABUPATEN LUMAJANG</h2>
 
-    <div class="bulan-pilih">
+    <div class="pilih-bulan">
         <label>Bulan: </label>
-        <select id="pilihBulan" onchange="buatTabel()">
-            <option value="1-2026">JANUARI 2026</option>
-            <option value="2-2026">PEBRUARI 2026</option>
-            <option value="3-2026">MARET 2026</option>
-            <option value="4-2026">APRIL 2026</option>
-            <option value="5-2026">MEI 2026</option>
-            <option value="6-2026">JUNI 2026</option>
-            <option value="7-2026">JULI 2026</option>
-            <option value="8-2026" selected>AGUSTUS 2026</option>
-            <option value="9-2026">SEPTEMBER 2026</option>
-            <option value="10-2026">OKTOBER 2026</option>
-            <option value="11-2026">NOVEMBER 2026</option>
-            <option value="12-2026">DESEMBER 2026</option>
+        <select id="pilihBulan" onchange="ubahBulan()">
+            <option value="SEPTEMBER 2026">SEPTEMBER 2026</option>
+            <option value="AGUSTUS 2026">AGUSTUS 2026</option>
+            <option value="JULI 2026">JULI 2026</option>
         </select>
     </div>
 
-    <div id="statusKoneksi" class="status">Memeriksa koneksi...</div>
+    <div class="status" id="statusHubung">🔌 TERHUBUNG - Data diperbarui otomatis</div>
 
-    <div class="tombol-bar">
-        <button class="btn-hijau" onclick="unduhExcel()">📥 Unduh Excel</button>
-        <button class="btn-merah" onclick="hapusSemua()">🗑️ Hapus Semua Data</button>
+    <div class="tombol">
+        <button class="btn-excel" onclick="unduhExcel()">📋 Unduh Excel</button>
+        <button class="btn-cetak" onclick="cetakBerkas()">🖨️ CETAK BERKAS</button>
+        <button class="btn-hapus" onclick="hapusSemuaData()">🗑️ Hapus Semua Data</button>
     </div>
 
-    <div style="overflow-x:auto;">
-        <table id="tabelUtuh">
-            <thead id="kepalaTabel"></thead>
-            <tbody id="isiTabel"></tbody>
-        </table>
-    </div>
+    <table id="tabelAbsen">
+        <thead id="bagianKepala"></thead>
+        <tbody id="bagianIsi"></tbody>
+    </table>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script>
@@ -87,16 +80,16 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("dataAbsen");
-let dataMentah = [];
 
-const DAFTAR_URUTAN = [
+// === DAFTAR PERANGKAT DESA ===
+const DAFTAR = [
     {nama:"MUHAMAD HASYIM", jabatan:"Kepala Desa"},
     {nama:"RUBIANTO", jabatan:"Sekretaris Desa"},
     {nama:"ETIK WAHYUNINGSIH", jabatan:"Kaur TU dan Umum"},
     {nama:"NURCHOIRIDA NIRWANAH", jabatan:"Kaur Keuangan"},
     {nama:"ZAINUL FITRIANDI", jabatan:"Kaur Perencanaan"},
     {nama:"IKA NURSASI", jabatan:"Kasie Pemerintahan"},
-    {nama:"NISFUL LAILI IKA J.", jabatan:"Kasie Kesra"},
+    {nama:"NISFUL LAILI KA J.", jabatan:"Kasie Kesra"},
     {nama:"WIJI SAHRONI", jabatan:"Kasie Pelayanan"},
     {nama:"YUDI ARMINTO", jabatan:"Kasun Karang Tengah"},
     {nama:"NURSUADI", jabatan:"Kasun Cerme Wetan"},
@@ -104,118 +97,285 @@ const DAFTAR_URUTAN = [
     {nama:"WAHYU HARI P.", jabatan:"Kasun Krajan"}
 ];
 
-const TANGGAL_MERAH = {
-    "1-1": true, "1-29": true, "2-16": true, "3-29": true, "4-3": true,
-    "5-1": true, "5-14": true, "5-26": true, "6-1": true, "6-17": true,
-    "7-6": true, "8-17": true, "9-24": true, "12-25": true
+// === DAFTAR LIBUR NASIONAL ===
+const DAFTAR_LIBUR = {
+    "2026-01-01":"Tahun Baru Masehi",
+    "2026-01-29":"Tahun Baru Imlek",
+    "2026-03-29":"Hari Raya Nyepi",
+    "2026-04-03":"Wafat Isa Almasih",
+    "2026-05-01":"Hari Buruh",
+    "2026-05-14":"Kenaikan Isa Almasih",
+    "2026-06-25":"Idul Adha",
+    "2026-07-06":"Tahun Baru Islam",
+    "2026-08-17":"Hari Kemerdekaan",
+    "2026-08-26":"Maulid Nabi Muhammad SAW",
+    "2026-12-24":"Natal"
 };
 
-function jumlahHari(bulan, tahun){
-    return new Date(tahun, bulan, 0).getDate();
-}
+let dataAbsen = {};
+let bulanTerpilih = "SEPTEMBER 2026";
+let thn = 2026, bln = 8;
 
-function cekLibur(tgl, bln, thn){
-    const hari = new Date(thn, bln-1, tgl).getDay();
-    const kunci = bln + "-" + tgl;
-    if(hari === 0) return {jenis:"minggu", libur:true, teks:"MINGGU"};
-    if(TANGGAL_MERAH[kunci]) return {jenis:"merah", libur:true, teks:"LIBUR"};
-    return {libur:false};
-}
-
-function buatTabel(){
-    const val = document.getElementById("pilihBulan").value.split("-");
-    const bln = parseInt(val[0]);
-    const thn = parseInt(val[1]);
-    const jmlHari = jumlahHari(bln, thn);
-
-    let kepala = `<tr><th class="no">NO</th><th class="nama">NAMA</th><th class="nama">JABATAN</th>`;
-    for(let t=1; t<=jmlHari; t++){
-        const info = cekLibur(t, bln, thn);
-        kepala += info.libur ? `<th class="tg libur">${t}</th>` : `<th class="tg">${t}</th>`;
-    }
-    kepala += `</tr>`;
-    document.getElementById("kepalaTabel").innerHTML = kepala;
-
-    let isi = "";
-    DAFTAR_URUTAN.forEach((orang, urut) => {
-        isi += `<tr><td>${urut+1}</td><td class="nama">${orang.nama}</td><td class="nama">${orang.jabatan}</td>`;
-        for(let t=1; t<=jmlHari; t++){
-            const info = cekLibur(t, bln, thn);
-            if(info.libur){
-                const huruf = info.teks.split("");
-                isi += `<td class="huruf-libur">${huruf[urut] || ""}</td>`;
-                continue;
-            }
-            const tglCari = t + "/" + bln + "/" + thn;
-            const catatan = dataMentah.filter(d => d.nama === orang.nama && d.tgl === tglCari).sort((a,b)=>new Date(b.waktu)-new Date(a.waktu))[0];
-            let tampil = "";
-            let kelas = "kosong";
-            if(catatan){
-                tampil = catatan.jam.replace(".", ":");
-                if(catatan.ket === "Hadir") kelas = "hadir";
-                else if(catatan.ket === "Terlambat") kelas = "terlambat";
-                else if(catatan.ket === "Sakit") {kelas = "sakit"; tampil = "sakit";}
-                else if(catatan.ket === "Izin") {kelas = "izin"; tampil = "ijin";}
-            }
-            isi += `<td class="${kelas}">${tampil}</td>`;
-        }
-        isi += `</tr>`;
-    });
-    document.getElementById("isiTabel").innerHTML = isi;
-}
-
-db.on("value", (snap) => {
-    const hasil = snap.val();
-    dataMentah = hasil ? Object.values(hasil) : [];
+// === UBAH BULAN ===
+function ubahBulan(){
+    bulanTerpilih = document.getElementById("pilihBulan").value;
+    const bagian = bulanTerpilih.split(" ");
+    thn = parseInt(bagian[1]);
+    bln = ["JANUARI","FEBRUARI","MARET","APRIL","MEI","JUNI","JULI","AGUSTUS","SEPTEMBER","OKTOBER","NOVEMBER","DESEMBER"].indexOf(bagian[0]) + 1;
     buatTabel();
-    document.getElementById("statusKoneksi").innerText = "✅ TERHUBUNG - Data diperbarui otomatis";
-    document.getElementById("statusKoneksi").className = "status terhubung";
-}, (err) => {
-    document.getElementById("statusKoneksi").innerText = "❌ PUTUS KONEKSI: " + err.message;
-    document.getElementById("statusKoneksi").className = "status putus";
-});
+    ambilData();
+}
 
-function unduhExcel(){
-    const val = document.getElementById("pilihBulan").value.split("-");
-    const bln = parseInt(val[0]);
-    const thn = parseInt(val[1]);
-    const jmlHari = jumlahHari(bln, thn);
-    const namaBulan = ["","JANUARI","PEBRUARI","MARET","APRIL","MEI","JUNI","JULI","AGUSTUS","SEPTEMBER","OKTOBER","NOVEMBER","DESEMBER"][bln];
+// === AMBIL JUMLAH TANGGAL ===
+function jumlahTanggal(b,t){
+    return new Date(t,b,0).getDate();
+}
 
-    const barisJudul = ["ABSENSI KEPALA DESA DAN PERANGKAT DESA JATISARI — KECAMATAN TEMPEH KABUPATEN LUMAJANG"];
-    const barisBulan = ["BULAN " + namaBulan + " TAHUN " + thn];
-    const barisKosong = [""];
-    const barisTabel = ["NO","NAMA","JABATAN"];
-    for(let t=1; t<=jmlHari; t++) barisTabel.push(t);
-    const dataExcel = [barisJudul, barisBulan, barisKosong, barisTabel];
+// === AMBIL HARI DARI TANGGAL ===
+function hariDariTanggal(tg,bl,th){
+    const hari = ["M","S","S","R","K","J","S"];
+    return hari[new Date(th,bl-1,tg).getDay()];
+}
 
-    DAFTAR_URUTAN.forEach((orang, urut) => {
-        const baris = [urut+1, orang.nama, orang.jabatan];
-        for(let t=1; t<=jmlHari; t++){
-            const info = cekLibur(t, bln, thn);
-            if(info.libur){
-                const huruf = info.teks.split("");
-                baris.push(huruf[urut] || "");
-                continue;
-            }
-            const tglCari = t + "/" + bln + "/" + thn;
-            const catatan = dataMentah.filter(d => d.nama === orang.nama && d.tgl === tglCari).sort((a,b)=>new Date(b.waktu)-new Date(a.waktu))[0];
-            baris.push(catatan ? (catatan.ket==="Sakit"?"sakit":catatan.ket==="Izin"?"ijin":catatan.jam.replace(".",":")) : "");
+// === CEK TANGGAL MERAH ===
+function cekTanggalMerah(tg,bl,th){
+    const kunci = `${th}-${String(bl).padStart(2,"0")}-${String(tg).padStart(2,"0")}`;
+    if(DAFTAR_LIBUR[kunci]) return DAFTAR_LIBUR[kunci];
+    const hariMinggu = new Date(th,bl-1,tg).getDay();
+    if(hariMinggu === 0) return "MINGGU";
+    return false;
+}
+
+// === BUAT TABEL ===
+function buatTabel(){
+    const jmlTgl = jumlahTanggal(bln,thn);
+    const kepala = document.getElementById("bagianKepala");
+    const isi = document.getElementById("bagianIsi");
+
+    let baris1 = "<tr><th rowspan='2'>NO</th><th rowspan='2'>NAMA</th><th rowspan='2'>JABATAN</th>";
+    let baris2 = "<tr>";
+
+    for(let t=1; t<=jmlTgl; t++){
+        const hari = hariDariTanggal(t,bln,thn);
+        const libur = cekTanggalMerah(t,bln,thn);
+        if(libur){
+            baris1 += `<th class="tgl-merah">${t}</th>`;
+            baris2 += `<th class="huruf-minggu">${hari}</th>`;
+        } else {
+            baris1 += `<th>${t}</th>`;
+            baris2 += `<th>${hari}</th>`;
         }
-        dataExcel.push(baris);
+    }
+    baris1 += "</tr>";
+    baris2 += "</tr>";
+    kepala.innerHTML = baris1 + baris2;
+
+    let barisIsi = "";
+    DAFTAR.forEach((orang, idx)=>{
+        barisIsi += `<tr><td>${idx+1}</td><td>${orang.nama}</td><td>${orang.jabatan}</td>`;
+        for(let t=1; t<=jmlTgl; t++){
+            const libur = cekTanggalMerah(t,bln,thn);
+            if(libur){
+                barisIsi += `<td class="minggu">${libur === "MINGGU" ? "M<br>I<br>N<br>G<br>U" : libur.substring(0,1)}</td>`;
+            } else {
+                barisIsi += `<td id="sel-${idx}-${t}" class="kosong"></td>`;
+            }
+        }
+        barisIsi += "</tr>";
+    });
+    isi.innerHTML = barisIsi;
+}
+
+// === AMBIL DATA DARI FIREBASE ===
+function ambilData(){
+    dataAbsen = {};
+    db.orderByChild("waktu").on("value", (snap)=>{
+        const semua = snap.val() || {};
+        for(let key in semua){
+            const d = semua[key];
+            if(!d.tgl) continue;
+            const [hr,bl,thnAbsen] = d.tgl.split("/");
+            if(parseInt(bl) === bln && parseInt(thnAbsen) === thn){
+                dataAbsen[`${d.nama}-${hr}`] = d;
+            }
+        }
+        isiKeTabel();
+        document.getElementById("statusHubung").innerHTML = "✅ TERHUBUNG - Data diperbarui otomatis";
+    }, (err)=>{
+        document.getElementById("statusHubung").innerHTML = "❌ TIDAK TERHUBUNG: " + err.message;
+    });
+}
+
+// === ISI DATA KE TABEL ===
+function isiKeTabel(){
+    const jmlTgl = jumlahTanggal(bln,thn);
+    DAFTAR.forEach((orang, idx)=>{
+        for(let t=1; t<=jmlTgl; t++){
+            const sel = document.getElementById(`sel-${idx}-${t}`);
+            if(!sel) continue;
+            const kunci = `${orang.nama}-${t}`;
+            const d = dataAbsen[kunci];
+            if(d){
+                if(d.ket === "Hadir"){
+                    sel.innerHTML = `<span class="hadir">${d.jam}</span>`;
+                } else if(d.ket === "Terlambat"){
+                    sel.innerHTML = `<span class="terlambat">${d.jam}</span>`;
+                } else if(d.ket === "Sakit"){
+                    sel.innerHTML = "S";
+                } else if(d.ket === "Izin"){
+                    sel.innerHTML = "I";
+                } else {
+                    sel.innerHTML = d.ket.substring(0,1);
+                }
+            } else {
+                sel.innerHTML = "";
+            }
+        }
+    });
+}
+
+// === UNDUH EXCEL ===
+function unduhExcel(){
+    const jmlTgl = jumlahTanggal(bln,thn);
+    let csv = "ABSENSI KEPALA DESA DAN PERANGKAT DESA JATISARI\r\n";
+    csv += "KECAMATAN TEMPEH KABUPATEN LUMAJANG\r\n";
+    csv += `Bulan: ${bulanTerpilih}\r\n\r\n`;
+    csv += "NO\tNAMA\tJABATAN";
+    for(let t=1; t<=jmlTgl; t++) csv += "\t" + t;
+    csv += "\r\n";
+
+    const hari = ["M","S","S","R","K","J","S"];
+    csv += "\t\t";
+    for(let t=1; t<=jmlTgl; t++){
+        const h = hariDariTanggal(t,bln,thn);
+        const libur = cekTanggalMerah(t,bln,thn);
+        csv += "\t" + (libur ? "**"+h+"**" : h);
+    }
+    csv += "\r\n";
+
+    DAFTAR.forEach((orang, idx)=>{
+        csv += `${idx+1}\t${orang.nama}\t${orang.jabatan}`;
+        for(let t=1; t<=jmlTgl; t++){
+            const libur = cekTanggalMerah(t,bln,thn);
+            if(libur){
+                csv += "\t" + (libur === "MINGGU" ? "MINGGU" : libur);
+            } else {
+                const kunci = `${orang.nama}-${t}`;
+                const d = dataAbsen[kunci];
+                if(d){
+                    if(d.ket === "Hadir" || d.ket === "Terlambat") csv += "\t" + d.jam;
+                    else csv += "\t" + d.ket.substring(0,1);
+                } else {
+                    csv += "\t";
+                }
+            }
+        }
+        csv += "\r\n";
     });
 
-    const buku = XLSX.utils.book_new();
-    const lembar = XLSX.utils.aoa_to_sheet(dataExcel);
-    XLSX.utils.book_append_sheet(buku, lembar, "ABSENSI");
-    XLSX.writeFile(buku, `ABSENSI_DESA_JATISARI_${namaBulan}_${thn}.xlsx`);
+    const namaFile = `Absen_Desa_Jatisari_${bulanTerpilih.replace(" ","_")}.xls`;
+    const blob = new Blob(["\ufeff"+csv], {type:"application/vnd.ms-excel"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = namaFile;
+    a.click();
+    URL.revokeObjectURL(a.href);
 }
 
-function hapusSemua(){
-    if(confirm("Yakin HAPUS SEMUA DATA ABSENSI?")){
-        db.remove();
+// === CETAK BERKAS ===
+function cetakBerkas(){
+    const jmlTgl = jumlahTanggal(bln,thn);
+    const halaman = window.open("", "_blank", "width=1200,height=800");
+    halaman.document.write(`
+    <html>
+    <head>
+        <title>Absensi Desa Jatisari - ${bulanTerpilih}</title>
+        <style>
+            *{font-family:Arial,sans-serif;}
+            body{padding:20px; font-size:12px;}
+            h2{text-align:center; font-size:16px; font-weight:bold; margin-bottom:5px;}
+            h3{text-align:center; font-size:13px; font-weight:normal; margin-bottom:15px;}
+            table{border-collapse:collapse; width:100%;}
+            th,td{border:1px solid #000; padding:4px 3px; text-align:center; vertical-align:middle; font-size:11px;}
+            th{background:#f0f0f0;}
+            td:nth-child(2){text-align:left; padding-left:5px;}
+            .tgl-merah{color:red; font-weight:bold;}
+            .huruf-minggu{color:red; font-weight:bold;}
+            .minggu{background:#ffebee; color:red; font-weight:bold;}
+            .hadir{color:green; font-weight:bold;}
+            .terlambat{color:red; font-weight:bold;}
+            .ttd{border:none; margin-top:30px;}
+            .ttd td{border:none; width:33%; text-align:center; padding-top:40px;}
+            .btn{padding:10px 20px; font-size:14px; cursor:pointer; margin:20px auto; display:block;}
+            @media print{.btn{display:none;}}
+        </style>
+    </head>
+    <body>
+        <h2>ABSENSI KEPALA DESA DAN PERANGKAT DESA JATISARI</h2>
+        <h3>KECAMATAN TEMPEH KABUPATEN LUMAJANG</h3>
+        <h3>Bulan: ${bulanTerpilih}</h3>
+        <table>
+            <thead>
+                <tr><th rowspan="2">NO</th><th rowspan="2">NAMA</th><th rowspan="2">JABATAN</th>${Array.from({length:jmlTgl},(_,i)=>{
+                    const t=i+1; const lib=cekTanggalMerah(t,bln,thn);
+                    return lib?`<th class="tgl-merah">${t}</th>`:`<th>${t}</th>`;
+                }).join("")}</tr>
+                <tr>${Array.from({length:jmlTgl},(_,i)=>{
+                    const t=i+1; const h=hariDariTanggal(t,bln,thn); const lib=cekTanggalMerah(t,bln,thn);
+                    return lib?`<th class="huruf-minggu">${h}</th>`:`<th>${h}</th>`;
+                }).join("")}</tr>
+            </thead>
+            <tbody>
+                ${DAFTAR.map((orang,idx)=>`<tr><td>${idx+1}</td><td>${orang.nama}</td><td>${orang.jabatan}</td>${
+                    Array.from({length:jmlTgl},(_,i)=>{
+                        const t=i+1; const lib=cekTanggalMerah(t,bln,thn);
+                        if(lib) return lib==="MINGGU"?`<td class="minggu">M<br>I<br>N<br>G<br>U</td>`:`<td class="minggu">${lib.substring(0,1)}</td>`;
+                        const kunci = `${orang.nama}-${t}`;
+                        const d=dataAbsen[kunci];
+                        if(d){
+                            if(d.ket==="Hadir") return `<td class="hadir">${d.jam}</td>`;
+                            if(d.ket==="Terlambat") return `<td class="terlambat">${d.jam}</td>`;
+                            return `<td>${(d.ket||"").substring(0,1)}</td>`;
+                        }
+                        return `<td></td>`;
+                    }).join("")
+                }</tr>`).join("")}
+            </tbody>
+        </table>
+        <table class="ttd">
+            <tr><td>Mengetahui,<br><br><br><br><br>.................................</td><td></td><td>Desa Jatisari, ............ ${thn}<br><br><br><br><br>.................................</td></tr>
+        </table>
+        <button class="btn" onclick="window.print()">🖨️ KLIK DISINI UNTUK MENCETAK</button>
+    </body>
+    </html>
+    `);
+    halaman.document.close();
+}
+
+// === HAPUS SEMUA DATA ===
+function hapusSemuaData(){
+    if(confirm("⚠️ YAKIN INGIN MENGHAPUS SEMUA DATA ABSEN BULAN INI?\nData yang sudah dihapus TIDAK BISA DIKEMBALIKAN!")){
+        db.once("value").then((snap)=>{
+            const semua = snap.val() || {};
+            const hapus = [];
+            for(let key in semua){
+                const d = semua[key];
+                if(!d.tgl) continue;
+                const [hr,bl,thnAbsen] = d.tgl.split("/");
+                if(parseInt(bl) === bln && parseInt(thnAbsen) === thn){
+                    hapus.push(key);
+                }
+            }
+            let janji = Promise.resolve();
+            hapus.forEach(k=> janji = janji.then(()=> db.child(k).remove()));
+            janji.then(()=> alert("✅ SEMUA DATA BULAN INI BERHASIL DIHAPUS!"))
+                 .catch(e=> alert("❌ GAGAL: "+e.message));
+        });
     }
 }
+
+// === MULAI ===
+ubahBulan();
 </script>
 </body>
 </html>
