@@ -13,18 +13,17 @@ select{padding:3px 6px; font-size:13px;}
 .tombol{text-align:center; margin:8px 0;}
 button{padding:5px 10px; margin:2px; font-size:12px; cursor:pointer;}
 table{border-collapse:collapse; width:100%; table-layout:fixed; margin-top:5px;}
-th, td{border:1px solid #000; padding:4px 2px; text-align:center; vertical-align:middle; font-size:12px;}
-th{background:#f8f8f8; font-weight:bold;}
-td:nth-child(2){text-align:left; padding-left:6px;}
+th, td{border:1px solid #000; padding:5px 2px; text-align:center; vertical-align:middle; font-size:12px;}
+th{background:#f9f9f9; font-weight:bold;}
+td:nth-child(2){text-align:left; padding-left:8px;}
 th:nth-child(1), td:nth-child(1){width:4%;}
 th:nth-child(2), td:nth-child(2){width:18%;}
 th:nth-child(3), td:nth-child(3){width:13%;}
 .merah{color:red; font-weight:bold;}
 .hadir{color:green; font-weight:bold;}
 .terlambat{color:red; font-weight:bold;}
-.ttd{border:none; margin-top:15px; width:100%;}
-.ttd td{border:none; text-align:right; padding-right:10px; font-size:12px; line-height:1.8;}
-.garis-ttd{border-bottom:1px solid #000; width:220px; margin-left:auto;}
+.ttd-wrapper{width:100%; margin-top:20px; text-align:right; padding-right:15px; font-size:12px; line-height:1.7;}
+.garis-ttd{border-bottom:1px solid #000; width:230px; margin-left:auto; margin-top:8px; margin-bottom:5px;}
 @media print{
     .pilih-bulan, .tombol{display:none;}
     @page{size:A4 landscape; margin:0.8cm;}
@@ -49,6 +48,7 @@ Bulan: <select id="bln" onchange="buatTabel()">
 </div>
 
 <table id="tabel"></table>
+<div class="ttd-wrapper" id="tandaTangan"></div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -107,7 +107,7 @@ function buatTabel(){
     for(let t=1; t<=jmlTgl; t++) html += "<th></th>";
     html += "</tr>";
 
-    // Baris TANGGAL memanjang
+    // Baris TANGGAL menyilang
     html += "<tr><th colspan='" + jmlTgl + "' style='font-size:14px; letter-spacing:6px;'>TANGGAL</th></tr>";
 
     // Baris angka tanggal
@@ -121,9 +121,9 @@ function buatTabel(){
     }
     html += "</tr></thead><tbody>";
 
-    // Isi tabel
+    // Isi tabel — M-I-N-G-G-U berurutan ke bawah
     DAFTAR.forEach((orang, idx)=>{
-        let urutHuruf = 0;
+        let urutHuruf = idx; // langsung pakai nomor urut baris sebagai urutan huruf Minggu
         html += "<tr>";
         html += "<td>" + (idx+1) + "</td>";
         html += "<td>" + orang.nama + "</td>";
@@ -131,9 +131,8 @@ function buatTabel(){
 
         for(let t=1; t<=jmlTgl; t++){
             if(apakahMinggu(t, blnSkr, thnSkr)){
-                if(urutHuruf < 6){
+                if(urutHuruf >= 0 && urutHuruf < 6){
                     html += "<td class='merah'>" + hurufMinggu[urutHuruf] + "</td>";
-                    urutHuruf++;
                 }else{
                     html += "<td></td>";
                 }
@@ -155,16 +154,14 @@ function buatTabel(){
     });
 
     html += "</tbody>";
-
-    // Tanda tangan DENGAN GARIS di atas nama
-    html += "<tfoot><tr><td colspan='" + (3+jmlTgl) + "' class='ttd'>";
-    html += "Desa Jatisari, ............ " + thnSkr + "<br>";
-    html += "KEPALA DESA JATISARI<br><br>";
-    html += "<div class='garis-ttd'></div>";
-    html += "MUHAMAD HASYIM";
-    html += "</td></tr></tfoot>";
-
     document.getElementById("tabel").innerHTML = html;
+
+    // Tanda tangan TERSEPARAT di bawah kanan
+    document.getElementById("tandaTangan").innerHTML =
+        "Desa Jatisari, ............ " + thnSkr + "<br>" +
+        "KEPALA DESA JATISARI<br>" +
+        "<div class='garis-ttd'></div>" +
+        "MUHAMAD HASYIM";
 }
 
 db.on("value", function(snap){
