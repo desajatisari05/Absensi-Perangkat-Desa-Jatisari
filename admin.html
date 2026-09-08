@@ -7,6 +7,7 @@
 *{font-family:Arial, sans-serif; margin:0; padding:0; box-sizing:border-box;}
 body{background:#fff; padding:10px; font-size:13px;}
 
+/* === BAGIAN ATAS — PERSIS SEPERTI ASLINYA === */
 .bagian-atas{text-align:center; margin-bottom:10px;}
 .bagian-atas h1{font-size:16px; font-weight:bold; margin-bottom:3px;}
 .bagian-atas h2{font-size:13px; margin-bottom:8px; font-weight:normal;}
@@ -19,6 +20,7 @@ body{background:#fff; padding:10px; font-size:13px;}
 .btn-cetak{background:#007bff;}
 .btn-hapus{background:#dc3545;}
 
+/* === TABEL === */
 table{border-collapse:collapse; width:100%; table-layout:fixed; margin-top:5px;}
 th, td{border:1px solid #000; padding:5px 2px; text-align:center; vertical-align:middle; font-size:12px;}
 th{background:#f9f9f9; font-weight:bold;}
@@ -30,6 +32,7 @@ th:nth-child(3), td:nth-child(3){width:13%;}
 .hadir{color:green; font-weight:bold;}
 .terlambat{color:red; font-weight:bold;}
 
+/* === TANDA TANGAN === */
 .tanda-tangan{width:100%; margin-top:20px; text-align:right; padding-right:15px; font-size:12px; line-height:1.7;}
 
 @media print{
@@ -40,6 +43,7 @@ th:nth-child(3), td:nth-child(3){width:13%;}
 </head>
 <body>
 
+<!-- === BAGIAN ATAS — PERSIS SEPERTI ASLINYA, TIDAK DIUBAH === -->
 <div class="bagian-atas">
 <h1>ABSENSI KEPALA DESA DAN PERANGKAT DESA JATISARI</h1>
 <h2>KECAMATAN TEMPEH KABUPATEN LUMAJANG</h2>
@@ -57,6 +61,7 @@ Bulan: <select id="bln" onchange="buatTabel()">
 <button class="btn-hapus">🗑️ Hapus Semua Data</button>
 </div>
 </div>
+<!-- === AKHIR BAGIAN ATAS === -->
 
 <table id="tabel"></table>
 <div class="tanda-tangan" id="ttd"></div>
@@ -111,15 +116,16 @@ function buatTabel(){
     const jmlTgl = jumlahTanggal(blnSkr, thnSkr);
 
     let html = "<thead>";
-    // Baris PALING ATAS = TANGGAL
     html += "<tr>";
-    html += "<th colspan='3'>TANGGAL</th>";
+    html += "<th rowspan='2'>NO</th>";
+    html += "<th rowspan='2'>NAMA</th>";
+    html += "<th rowspan='2'>JABATAN</th>";
     for(let t=1; t<=jmlTgl; t++) html += "<th></th>";
     html += "</tr>";
 
-    // Baris angka tanggal
+    html += "<tr><th colspan='" + jmlTgl + "' style='font-size:14px; letter-spacing:6px;'>TANGGAL</th></tr>";
+
     html += "<tr>";
-    html += "<th>NO</th><th>NAMA</th><th>JABATAN</th>";
     for(let t=1; t<=jmlTgl; t++){
         html += apakahLibur(t, blnSkr, thnSkr)
             ? "<th class='merah'>" + t + "</th>"
