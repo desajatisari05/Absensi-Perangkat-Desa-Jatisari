@@ -6,11 +6,21 @@
 <style>
 *{font-family:Arial, sans-serif; margin:0; padding:0; box-sizing:border-box;}
 body{background:#fff; padding:10px; font-size:13px;}
-.judul-atas{text-align:center; margin-bottom:8px;}
-.judul-atas h1{font-size:16px; font-weight:bold; margin-bottom:3px;}
-.judul-atas h2{font-size:13px; margin-bottom:8px; font-weight:normal;}
-.kontrol{text-align:center; margin-bottom:10px;}
-.kontrol select, .kontrol button{padding:4px 8px; font-size:13px; margin:2px;}
+
+/* === BAGIAN ATAS — PERSIS SEPERTI ASLINYA === */
+.bagian-atas{text-align:center; margin-bottom:10px;}
+.bagian-atas h1{font-size:16px; font-weight:bold; margin-bottom:3px;}
+.bagian-atas h2{font-size:13px; margin-bottom:8px; font-weight:normal;}
+.baris-kontrol{text-align:center; margin:8px 0;}
+.baris-kontrol select{padding:3px 6px; font-size:13px; margin:0 4px;}
+.baris-kontrol .status{font-size:12px; color:#333; margin-left:8px;}
+.tombol-group{text-align:center; margin:10px 0;}
+.tombol-group button{padding:6px 12px; margin:0 3px; font-size:12px; cursor:pointer; border:none; border-radius:3px; color:#fff; font-weight:bold;}
+.btn-excel{background:#28a745;}
+.btn-cetak{background:#007bff;}
+.btn-hapus{background:#dc3545;}
+
+/* === TABEL === */
 table{border-collapse:collapse; width:100%; table-layout:fixed; margin-top:5px;}
 th, td{border:1px solid #000; padding:5px 2px; text-align:center; vertical-align:middle; font-size:12px;}
 th{background:#f9f9f9; font-weight:bold;}
@@ -21,28 +31,35 @@ th:nth-child(3), td:nth-child(3){width:13%;}
 .merah{color:red; font-weight:bold;}
 .hadir{color:green; font-weight:bold;}
 .terlambat{color:red; font-weight:bold;}
+
+/* === TANDA TANGAN === */
 .tanda-tangan{width:100%; margin-top:20px; text-align:right; padding-right:15px; font-size:12px; line-height:1.7;}
+
 @media print{
-    .kontrol{display:none;}
+    .baris-kontrol, .tombol-group{display:none;}
     @page{size:A4 landscape; margin:0.8cm;}
 }
 </style>
 </head>
 <body>
 
-<!-- === BAGIAN ATAS TIDAK DIUBAH === -->
-<div class="judul-atas">
+<!-- === BAGIAN ATAS — PERSIS SEPERTI ASLINYA, TIDAK DIUBAH === -->
+<div class="bagian-atas">
 <h1>ABSENSI KEPALA DESA DAN PERANGKAT DESA JATISARI</h1>
 <h2>KECAMATAN TEMPEH KABUPATEN LUMAJANG</h2>
-</div>
-<div class="kontrol">
+<div class="baris-kontrol">
 Bulan: <select id="bln" onchange="buatTabel()">
 <option value="9/2026">SEPTEMBER 2026</option>
 <option value="8/2026">AGUSTUS 2026</option>
 <option value="7/2026">JULI 2026</option>
 </select>
-&nbsp;&nbsp;
-<button onclick="window.print()">🖨️ CETAK</button>
+<span class="status">⦿ TERHUBUNG - Data diperbarui otomatis</span>
+</div>
+<div class="tombol-group">
+<button class="btn-excel">📊 Unduh Excel</button>
+<button class="btn-cetak" onclick="window.print()">🖨️ Cetak Berkas</button>
+<button class="btn-hapus">🗑️ Hapus Semua Data</button>
+</div>
 </div>
 <!-- === AKHIR BAGIAN ATAS === -->
 
@@ -106,10 +123,8 @@ function buatTabel(){
     for(let t=1; t<=jmlTgl; t++) html += "<th></th>";
     html += "</tr>";
 
-    // Baris TANGGAL menyilang
     html += "<tr><th colspan='" + jmlTgl + "' style='font-size:14px; letter-spacing:6px;'>TANGGAL</th></tr>";
 
-    // Baris angka tanggal
     html += "<tr>";
     for(let t=1; t<=jmlTgl; t++){
         html += apakahLibur(t, blnSkr, thnSkr)
@@ -118,7 +133,6 @@ function buatTabel(){
     }
     html += "</tr></thead><tbody>";
 
-    // Isi tabel — M-I-N-G-G-U sesuai nomor urut baris
     DAFTAR.forEach((orang, idx)=>{
         html += "<tr>";
         html += "<td>" + (idx+1) + "</td>";
@@ -149,7 +163,6 @@ function buatTabel(){
     html += "</tbody>";
     document.getElementById("tabel").innerHTML = html;
 
-    // Tanda tangan TANPA GARIS
     document.getElementById("ttd").innerHTML =
         "Desa Jatisari, ............ " + thnSkr + "<br>" +
         "KEPALA DESA JATISARI<br><br>" +
