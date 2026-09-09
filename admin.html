@@ -34,7 +34,7 @@
         .kosong {background:#fff;}
         .tgl-header {font-size:13px; letter-spacing:3px;}
         .minggu-huruf {font-weight:bold; color:#c62828; background:#ffebee;}
-        .tanda-tangan-kanan {margin-top:20px; text-align:right; padding-right:15px; font-size:12px; line-height:2.2;}
+        .tanda-tangan-kanan {margin-top:20px; text-align:right; padding-right:15px; font-size:12px; line-height:1.8;}
         @media print {
             .tombol, .pilih-bulan, .status {display:none;}
             body {background:#fff; padding:0;}
@@ -67,9 +67,9 @@
     </table>
     <!-- ✅ TANDA TANGAN DI POJOK BAWAH KANAN -->
     <div class="tanda-tangan-kanan" id="tandaTangan">
-        Desa Jatisari, . . . . . . . <span id="tahun">2026</span><br>
+        Desa Jatisari, <span id="tglAkhirBulan">30 SEPTEMBER 2026</span><br>
         &nbsp;&nbsp;KEPALA DESA JATISARI<br>
-        <br><br><br>
+        <br><br>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MUHAMAD HASYIM
     </div>
 </div>
@@ -116,6 +116,7 @@ const DAFTAR_LIBUR = {
     "2026-08-26":"Maulid Nabi Muhammad SAW",
     "2026-12-24":"Natal"
 };
+const NAMA_BULAN = ["JANUARI","FEBRUARI","MARET","APRIL","MEI","JUNI","JULI","AGUSTUS","SEPTEMBER","OKTOBER","NOVEMBER","DESEMBER"];
 let dataAbsen = {};
 let bulanTerpilih = "SEPTEMBER 2026";
 let thn = 2026, bln = 8;
@@ -124,8 +125,10 @@ function ubahBulan(){
     bulanTerpilih = document.getElementById("pilihBulan").value;
     const bagian = bulanTerpilih.split(" ");
     thn = parseInt(bagian[1]);
-    bln = ["JANUARI","FEBRUARI","MARET","APRIL","MEI","JUNI","JULI","AGUSTUS","SEPTEMBER","OKTOBER","NOVEMBER","DESEMBER"].indexOf(bagian[0]) + 1;
-    document.getElementById("tahun").textContent = thn;
+    bln = NAMA_BULAN.indexOf(bagian[0]) + 1;
+    // Tampilkan tanggal terakhir bulan ini secara otomatis
+    const tglTerakhir = new Date(thn, bln, 0).getDate();
+    document.getElementById("tglAkhirBulan").textContent = `${tglTerakhir} ${NAMA_BULAN[bln-1]} ${thn}`;
     buatTabel();
     ambilData();
 }
@@ -282,6 +285,7 @@ function unduhExcel(){
 // === CETAK BERKAS ===
 function cetakBerkas(){
     const jmlTgl = jumlahTanggal(bln,thn);
+    const tglTerakhirCetak = new Date(thn, bln, 0).getDate();
     const halaman = window.open("", "_blank", "width=1400,height=900");
     halaman.document.write(`
     <html>
@@ -305,7 +309,7 @@ function cetakBerkas(){
             .hadir{color:green; font-weight:bold;}
             .terlambat{color:red; font-weight:bold;}
             .ttd{border:none; margin-top:15px; width:100%;}
-            .ttd td{border:none; text-align:right; padding-right:15px; font-size:12px; line-height:2.2;}
+            .ttd td{border:none; text-align:right; padding-right:15px; font-size:12px; line-height:1.8;}
             .btn{padding:10px 20px; font-size:14px; cursor:pointer; margin:8px auto; display:block;}
             @page {size:215mm 330mm landscape; margin:0.3cm;}
             @media print{.btn{display:none;}}
@@ -353,9 +357,9 @@ function cetakBerkas(){
         </table>
         <table class="ttd">
             <tr>
-                <td>Desa Jatisari, . . . . . . . ${thn}<br>
+                <td>Desa Jatisari, ${tglTerakhirCetak} ${NAMA_BULAN[bln-1]} ${thn}<br>
                     &nbsp;&nbsp;KEPALA DESA JATISARI<br>
-                    <br><br><br>
+                    <br><br>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MUHAMAD HASYIM
                 </td>
             </tr>
