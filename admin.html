@@ -34,6 +34,7 @@
         .kosong {background:#fff;}
         .tgl-header {font-size:13px; letter-spacing:3px;}
         .minggu-huruf {font-weight:bold; color:#c62828; background:#ffebee;}
+        .tanda-tangan-kiri {margin-top:20px; text-align:left; padding-left:15px; font-size:12px; line-height:2.2;}
         @media print {
             .tombol, .pilih-bulan, .status {display:none;}
             body {background:#fff; padding:0;}
@@ -64,6 +65,13 @@
         <thead id="bagianKepala"></thead>
         <tbody id="bagianIsi"></tbody>
     </table>
+    <!-- ✅ TANDA TANGAN DI POJOK BAWAH KIRI -->
+    <div class="tanda-tangan-kiri" id="tandaTangan">
+        Desa Jatisari, . . . . . . . <span id="tahun">2026</span><br>
+        &nbsp;&nbsp;KEPALA DESA JATISARI<br>
+        <br><br><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MUHAMAD HASYIM
+    </div>
 </div>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -117,6 +125,7 @@ function ubahBulan(){
     const bagian = bulanTerpilih.split(" ");
     thn = parseInt(bagian[1]);
     bln = ["JANUARI","FEBRUARI","MARET","APRIL","MEI","JUNI","JULI","AGUSTUS","SEPTEMBER","OKTOBER","NOVEMBER","DESEMBER"].indexOf(bagian[0]) + 1;
+    document.getElementById("tahun").textContent = thn;
     buatTabel();
     ambilData();
 }
@@ -172,7 +181,7 @@ function buatTabel(){
             const merah = cekApakahMerah(t,bln,thn);
             const minggu = cekApakahMinggu(t,bln,thn);
             if(minggu){
-                // ✅ HURUF M-I-N-G-G-U HANYA DI BARIS 1-6, BARIS 7-12 DIKOSONGKAN
+                // HURUF M-I-N-G-G-U HANYA DI BARIS 1-6, BARIS 7-12 DIKOSONGKAN
                 const huruf = ["M","I","N","G","G","U"];
                 barisIsi += idx < 6
                     ? `<td class="minggu-huruf">${huruf[idx]}</td>`
@@ -296,7 +305,7 @@ function cetakBerkas(){
             .hadir{color:green; font-weight:bold;}
             .terlambat{color:red; font-weight:bold;}
             .ttd{border:none; margin-top:15px; width:100%;}
-            .ttd td{border:none; text-align:right; padding-right:15px; font-size:12px;}
+            .ttd td{border:none; text-align:left; padding-left:15px; font-size:12px; line-height:2.2;}
             .btn{padding:10px 20px; font-size:14px; cursor:pointer; margin:8px auto; display:block;}
             @page {size:215mm 330mm landscape; margin:0.3cm;}
             @media print{.btn{display:none;}}
@@ -344,7 +353,11 @@ function cetakBerkas(){
         </table>
         <table class="ttd">
             <tr>
-                <td>Desa Jatisari, ............ ${thn}<br><br>KEPALA DESA JATISARI<br><br>___________________________<br>MUHAMAD HASYIM</td>
+                <td>Desa Jatisari, . . . . . . . ${thn}<br>
+                    &nbsp;&nbsp;KEPALA DESA JATISARI<br>
+                    <br><br><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MUHAMAD HASYIM
+                </td>
             </tr>
         </table>
         <button class="btn" onclick="window.print()">🖨️ KLIK DISINI UNTUK MENCETAK</button>
