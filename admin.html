@@ -32,7 +32,7 @@
         .hadir {color:green; font-weight:bold;}
         .terlambat {color:red; font-weight:bold;}
         .kosong {background:#fff;}
-        .tgl-header {font-size:13px; letter-spacing:3px;}
+        .tgl-header-text {font-size:13px; font-weight:bold; letter-spacing:6px;}
         .minggu-huruf {font-weight:bold; color:#c62828; background:#ffebee;}
         .tanda-tangan-kanan {margin-top:20px; text-align:right; padding-right:15px; font-size:12px; line-height:1.8;}
         @media print {
@@ -153,18 +153,14 @@ function buatTabel(){
     const jmlTgl = jumlahTanggal(bln,thn);
     const kepala = document.getElementById("bagianKepala");
     const isi = document.getElementById("bagianIsi");
-    // Baris 1: TANGGAL digabung menyilang
-    let barisJudul = `<tr><th rowspan='2'>NO</th><th rowspan='2'>NAMA</th><th rowspan='2'>JABATAN</th>`;
-    for(let t=1; t<=jmlTgl; t++){
-        const merah = cekApakahMerah(t,bln,thn);
-        if(merah){
-            barisJudul += `<th class="tgl-merah"></th>`;
-        } else {
-            barisJudul += `<th></th>`;
-        }
-    }
-    barisJudul += "</tr>";
-    // Baris 2: angka tanggal
+    // ✅ BARIS 1: NO, NAMA, JABATAN + SATU KOLOM TANGGAL membentang ke kanan
+    let barisJudul = `<tr>
+        <th rowspan='2'>NO</th>
+        <th rowspan='2'>NAMA</th>
+        <th rowspan='2'>JABATAN</th>
+        <th colspan='${jmlTgl}' class='tgl-header-text'>TANGGAL</th>
+    </tr>`;
+    // ✅ BARIS 2: ANGKA TANGGAL 1,2,3,...
     let barisAngka = "<tr>";
     for(let t=1; t<=jmlTgl; t++){
         const merah = cekApakahMerah(t,bln,thn);
@@ -310,6 +306,7 @@ function cetakBerkas(){
             .terlambat{color:red; font-weight:bold;}
             .ttd{border:none; margin-top:15px; width:100%;}
             .ttd td{border:none; text-align:right; padding-right:15px; font-size:12px; line-height:1.8;}
+            .tgl-cetak{letter-spacing:6px; font-weight:bold; font-size:13px;}
             .btn{padding:10px 20px; font-size:14px; cursor:pointer; margin:8px auto; display:block;}
             @page {size:215mm 330mm landscape; margin:0.3cm;}
             @media print{.btn{display:none;}}
@@ -321,10 +318,12 @@ function cetakBerkas(){
         <h3>Bulan: ${bulanTerpilih}</h3>
         <table>
             <thead>
-                <tr><th rowspan="2">NO</th><th rowspan="2">NAMA</th><th rowspan="2">JABATAN</th>${Array.from({length:jmlTgl},(_,i)=>{
-                    const t=i+1; const merah=cekApakahMerah(t,bln,thn);
-                    return merah?`<th class="tgl-merah"></th>`:`<th></th>`;
-                }).join("")}</tr>
+                <tr>
+                    <th rowspan="2">NO</th>
+                    <th rowspan="2">NAMA</th>
+                    <th rowspan="2">JABATAN</th>
+                    <th colspan="${jmlTgl}" class="tgl-cetak">TANGGAL</th>
+                </tr>
                 <tr>${Array.from({length:jmlTgl},(_,i)=>{
                     const t=i+1; const merah=cekApakahMerah(t,bln,thn);
                     return merah?`<th class="tgl-merah">${t}</th>`:`<th>${t}</th>`;
