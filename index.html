@@ -3,67 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABSENSI KEPALA DESA DAN PERANGKAT DESA</title>
+    <title>ABSENSI PERANGKAT DESA JATISARI</title>
     <style>
         * {font-family: Arial, sans-serif; margin:0; padding:0; box-sizing:border-box;}
-        body {background:#e8f5e9; padding:15px; font-size:14px;}
-        .wadah {max-width:420px; margin:0 auto; background:#fff; border-radius:10px; padding:20px; box-shadow:0 3px 10px rgba(0,0,0,0.1);}
-        h2 {color:#2e7d32; text-align:center; margin-bottom:0; font-size:32px; font-weight:normal; font-style:italic;}
-        h3 {color:#2e7d32; text-align:center; margin-top:5px; margin-bottom:20px; font-size:26px; font-weight:normal; font-style:italic;}
-        .alamat {text-align:center; margin-bottom:20px; font-size:15px; color:#333;}
-        label {display:block; margin:12px 0 5px; font-weight:bold; color:#333;}
-        select, input {width:100%; padding:10px; font-size:15px; border:1px solid #ccc; border-radius:5px;}
-        .kode-kotak {background:#fff3e0; border:2px dashed #e65100; padding:15px; text-align:center; margin:15px 0; border-radius:8px; display:none;}
-        .kode-label {font-size:13px; color:#e65100; font-weight:bold;}
-        .kode-nilai {font-size:28px; font-weight:bold; color:#c62828; margin-top:5px; letter-spacing:5px;}
-        button {width:100%; padding:12px; background:#2e7d32; color:#fff; border:none; border-radius:5px; font-size:16px; font-weight:bold; cursor:pointer; margin-top:20px;}
+        body {background:#e8f5e9; padding:10px; font-size:14px;}
+        .wadah {max-width:420px; margin:0 auto; background:#fff; padding:15px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+        h2 {text-align:center; font-size:18px; margin-bottom:15px; color:#2e7d32; font-weight:bold;}
+        .info {background:#e8f5e9; padding:10px; border-radius:6px; margin-bottom:12px; font-size:14px; line-height:1.6;}
+        .info span {font-weight:bold; color:#1b5e20;}
+        label {display:block; margin:10px 0 5px 0; font-weight:bold; font-size:14px;}
+        select, button {width:100%; padding:12px; font-size:15px; border-radius:6px; border:1px solid #ccc;}
+        button {background:#2e7d32; color:#fff; border:none; margin-top:12px; font-weight:bold; cursor:pointer;}
         button:disabled {background:#ccc; cursor:not-allowed;}
-        .pesan {margin-top:15px; padding:10px; border-radius:5px; text-align:center; font-weight:bold; display:none;}
-        .sukses {background:#e8f5e9; color:#2e7d32; display:block;}
-        .salah {background:#ffebee; color:#c62828; display:block;}
-        .info-lokasi {font-size:12px; margin-top:10px; color:#555;}
-        .libur-box {background:#fff3cd; border:2px solid #f57c00; padding:15px; text-align:center; border-radius:8px; margin-bottom:15px; display:none;}
-        .libur-teks {font-size:18px; font-weight:bold; color:#e65100;}
+        .status {margin-top:15px; padding:12px; border-radius:6px; font-weight:bold; text-align:center; font-size:15px;}
+        .berhasil {background:#c8e6c9; color:#256029;}
+        .gagal {background:#ffcdd2; color:#c62828;}
+        .catatan {margin-top:8px; font-size:13px; color:#555; line-height:1.5;}
     </style>
 </head>
 <body>
 <div class="wadah">
-    <h2>ABSENSI</h2>
-    <h3>KEPALA DESA DAN PERANGKAT DESA</h3>
-    <div class="alamat">Desa Jatisari  Kec. Tempeh Kab. Lumajang</div>
+    <h2>ABSENSI KERJA<br>DESA JATISARI</h2>
 
-    <div class="libur-box" id="kotakLibur">
-        <div class="libur-teks">🚫 HARI INI LIBUR NASIONAL</div>
-        <div style="margin-top:5px; color:#666;" id="namaLibur"></div>
+    <div class="info">
+        Hari, Tanggal : <span id="tglSekarang"></span><br>
+        Jam Sekarang : <span id="jamSekarang"></span><br>
+        Lokasi : <span id="lokasi">Mendeteksi...</span>
     </div>
 
-    <label>Nama Lengkap:</label>
-    <select id="namaPilih" onchange="cekKhususBebasLokasi()"><option value="">-- Pilih Nama Anda --</option></select>
-
-    <label>Jabatan:</label>
-    <input type="text" id="jabatanTampil" readonly placeholder="Otomatis muncul">
-
-    <label>Keterangan Absen:</label>
-    <select id="keteranganPilih" onchange="cekKeteranganAbsen()">
-        <option value="">-- Pilih Keterangan --</option>
-        <option value="Hadir">✅ HADIR</option>
-        <option value="Sakit">🏠 SAKIT</option>
-        <option value="Izin">📝 IZIN</option>
+    <label for="nama">Pilih Nama Anda:</label>
+    <select id="nama" onchange="isiJabatan()">
+        <option value="">-- Pilih Nama --</option>
+        <option value="MUHAMAD HASYIM">MUHAMAD HASYIM</option>
+        <option value="RUBIANTO">RUBIANTO</option>
+        <option value="ETIK WAHYUNINGSIH">ETIK WAHYUNINGSIH</option>
+        <option value="NURCHOIRIDA NIRWANAH">NURCHOIRIDA NIRWANAH</option>
+        <option value="ZAINUL FITRIANDI">ZAINUL FITRIANDI</option>
+        <option value="IKA NURSASI">IKA NURSASI</option>
+        <option value="NISFUL LAILI IKA J.">NISFUL LAILI IKA J.</option>
+        <option value="WIJI SAHRONI">WIJI SAHRONI</option>
+        <option value="YUDI ARMINTO">YUDI ARMINTO</option>
+        <option value="NURSUADI">NURSUADI</option>
+        <option value="ANDIK EKA SUDIAWANTO">ANDIK EKA SUDIAWANTO</option>
+        <option value="WAHYU HARI P.">WAHYU HARI P.</option>
     </select>
 
-    <div class="kode-kotak" id="kotakKode">
-        <div class="kode-label">✅ KODE ABSENSI ANDA:</div>
-        <div class="kode-nilai" id="nilaiKode"></div>
-        <div class="kode-label" style="font-size:11px; margin-top:5px;">Masukkan kode di bawah ini</div>
+    <label for="jabatan">Jabatan:</label>
+    <select id="jabatan" disabled>
+        <option value="">-- Otomatis --</option>
+    </select>
+
+    <label for="keterangan">Keterangan Absen:</label>
+    <select id="keterangan">
+        <option value="Hadir">Hadir</option>
+        <option value="Terlambat">Terlambat</option>
+        <option value="Sakit">Sakit</option>
+        <option value="Izin">Izin</option>
+    </select>
+
+    <button id="btnAbsen" onclick="kirimAbsen()">KIRIM ABSEN</button>
+
+    <div id="status" class="status"></div>
+    <div class="catatan">
+        📌 Hadir: 07.21 – 08.30<br>
+        ⚠️ Terlambat: 08.31 – 14.00<br>
+        ✖ Sebelum 07.00 tidak bisa absen
     </div>
-
-    <label id="labelKode" style="display:none;">Masukkan Kode Absensi:</label>
-    <input type="text" id="masukkanKode" placeholder="Masukkan kode yang muncul di atas" style="display:none;">
-
-    <div class="info-lokasi" id="infoLokasi">🔍 Memeriksa lokasi...</div>
-
-    <button id="tombolAbsen" onclick="kirimAbsen()">✅ KLIK DISINI UNTUK ABSEN</button>
-    <div id="pesan" class="pesan"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -78,342 +83,112 @@ const firebaseConfig = {
   messagingSenderId: "123456789012",
   appId: "1:123456789012:web:abc123def456ghi789jkl0"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("dataAbsen");
-const dbHp = firebase.database().ref("hpTerpakai");
 
-// === DAFTAR LIBUR NASIONAL TAHUN 2026 ===
-const DAFTAR_LIBUR = [
-    {tgl:"01/01/2026", nama:"Tahun Baru Masehi"},
-    {tgl:"29/01/2026", nama:"Tahun Baru Imlek"},
-    {tgl:"29/03/2026", nama:"Hari Raya Nyepi"},
-    {tgl:"03/04/2026", nama:"Wafat Isa Almasih"},
-    {tgl:"01/05/2026", nama:"Hari Buruh Internasional"},
-    {tgl:"14/05/2026", nama:"Kenaikan Isa Almasih"},
-    {tgl:"25/06/2026", nama:"Hari Raya Idul Adha"},
-    {tgl:"06/07/2026", nama:"Tahun Baru Islam 1447 H"},
-    {tgl:"17/08/2026", nama:"Hari Kemerdekaan RI ke-81"},
-    {tgl:"26/08/2026", nama:"Maulid Nabi Muhammad SAW"},
-    {tgl:"24/12/2026", nama:"Hari Raya Natal"}
-];
+// === DAFTAR NAMA DAN JABATAN ===
+const DAFTAR = {
+    "MUHAMAD HASYIM": "Kepala Desa",
+    "RUBIANTO": "Sekretaris Desa",
+    "ETIK WAHYUNINGSIH": "Kaur TU dan Umum",
+    "NURCHOIRIDA NIRWANAH": "Kaur Keuangan",
+    "ZAINUL FITRIANDI": "Kaur Perencanaan",
+    "IKA NURSASI": "Kasie Pemerintahan",
+    "NISFUL LAILI IKA J.": "Kasie Kesra",
+    "WIJI SAHRONI": "Kasie Pelayanan",
+    "YUDI ARMINTO": "Kasun Karang Tengah",
+    "NURSUADI": "Kasun Cerme Wetan",
+    "ANDIK EKA SUDIAWANTO": "Kasun Cerme Kulon",
+    "WAHYU HARI P.": "Kasun Krajan"
+};
 
-// === DAFTAR PERANGKAT DESA ===
-const DAFTAR = [
-    {nama:"MUHAMAD HASYIM", jabatan:"Kepala Desa", bebasLokasi:true},
-    {nama:"RUBIANTO", jabatan:"Sekretaris Desa", bebasLokasi:false},
-    {nama:"ETIK WAHYUNINGSIH", jabatan:"Kaur TU dan Umum", bebasLokasi:false},
-    {nama:"NURCHOIRIDA NIRWANAH", jabatan:"Kaur Keuangan", bebasLokasi:false},
-    {nama:"ZAINUL FITRIANDI", jabatan:"Kaur Perencanaan", bebasLokasi:false},
-    {nama:"IKA NURSASI", jabatan:"Kasie Pemerintahan", bebasLokasi:false},
-    {nama:"NISFUL LAILI KA J.", jabatan:"Kasie Kesra", bebasLokasi:false},
-    {nama:"WIJI SAHRONI", jabatan:"Kasie Pelayanan", bebasLokasi:false},
-    {nama:"YUDI ARMINTO", jabatan:"Kasun Karang Tengah", bebasLokasi:true},
-    {nama:"NURSUADI", jabatan:"Kasun Cerme Wetan", bebasLokasi:true},
-    {nama:"ANDIK EKA SUDIAWANTO", jabatan:"Kasun Cerme Kulon", bebasLokasi:true},
-    {nama:"WAHYU HARI P.", jabatan:"Kasun Krajan", bebasLokasi:true}
-];
-
-// === LOKASI KANTOR DESA JATISARI ===
-const KANTOR_LAT = -8.196026;
-const KANTOR_LNG = 113.1620121;
-const RADIUS_METER = 100;
-
-// === ATURAN JAM ABSENSI ===
-const JAM_BUKA = 7;
-const MENIT_BUKA = 0;
-const JAM_TEPAT = 8;
-const MENIT_TEPAT = 30;
-const JAM_TUTUP = 13;
-const MENIT_TUTUP = 0;
-
-// === IDENTITAS HP ===
-const ID_HP = btoa(navigator.userAgent + screen.width + screen.height).substring(0,12);
-let hpTerpakai = false;
-let lokasiValid = false;
-let kodeSaatIni = "";
-let lokasiDariKantor = 999999;
-
-// === AMBIL TANGGAL HARI INI ===
-function ambilTanggal(){
-    const sekarang = new Date();
-    return sekarang.getDate() + "/" + (sekarang.getMonth()+1) + "/" + sekarang.getFullYear();
+// === ISI JABATAN OTOMATIS ===
+function isiJabatan(){
+    const nama = document.getElementById("nama").value;
+    const jabatan = document.getElementById("jabatan");
+    jabatan.innerHTML = nama ? `<option value="${DAFTAR[nama]}">${DAFTAR[nama]}</option>` : `<option value="">-- Otomatis --</option>`;
 }
 
-// === CEK APAKAH HARI INI LIBUR ===
-function cekHariLibur(){
-    const tglSekarang = ambilTanggal();
-    for(let i=0; i<DAFTAR_LIBUR.length; i++){
-        if(DAFTAR_LIBUR[i].tgl === tglSekarang){
-            return DAFTAR_LIBUR[i].nama;
-        }
-    }
-    return false;
-}
-
-// === CEK LIBUR SAAT HALAMAN DIBUKA ===
-const namaHariLibur = cekHariLibur();
-if(namaHariLibur){
-    document.getElementById("kotakLibur").style.display = "block";
-    document.getElementById("namaLibur").textContent = namaHariLibur;
-    document.getElementById("tombolAbsen").disabled = true;
-}
-
-// === ISI PILIHAN NAMA ===
-const pilih = document.getElementById("namaPilih");
-DAFTAR.forEach((orang)=>{
-    let opsi = document.createElement("option");
-    opsi.value = orang.nama;
-    opsi.textContent = orang.nama;
-    pilih.appendChild(opsi);
-});
-
-// === CEK HP SUDAH DIPAKAI HARI INI ===
-async function cekHpTerpakai(){
-    const tglSekarang = ambilTanggal();
-    const snap = await dbHp.orderByChild("tgl").equalTo(tglSekarang).once("value");
-    const daftar = snap.val() || {};
-    for(let key in daftar){
-        if(daftar[key].idHp === ID_HP){
-            hpTerpakai = true;
-            return true;
-        }
-    }
-    hpTerpakai = false;
-    return false;
-}
-
-async function tandaiHpTerpakai(nama){
-    await dbHp.push({
-        idHp: ID_HP,
-        tgl: ambilTanggal(),
-        nama: nama,
-        waktu: new Date().toISOString()
-    });
-}
-
-// === CEK LOKASI ===
-if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(berhasilLokasi, gagalLokasi, {enableHighAccuracy:true, timeout:10000});
-} else {
-    document.getElementById("infoLokasi").innerHTML = "❌ Perangkat tidak mendukung lokasi";
-}
-
-function berhasilLokasi(posisi){
-    const lat = posisi.coords.latitude;
-    const lng = posisi.coords.longitude;
-    lokasiDariKantor = hitungJarak(lat, lng, KANTOR_LAT, KANTOR_LNG);
-    
-    if(lokasiDariKantor <= RADIUS_METER){
-        lokasiValid = true;
-        buatKodeBaru();
-        document.getElementById("infoLokasi").innerHTML = `✅ Di dalam kantor (${Math.round(lokasiDariKantor)} meter)`;
-    } else {
-        lokasiValid = false;
-        kodeSaatIni = "";
-        document.getElementById("infoLokasi").innerHTML = `⚠️ Di luar kantor (${Math.round(lokasiDariKantor)} meter dari kantor)`;
-    }
-    cekKeteranganAbsen();
-}
-
-function gagalLokasi(err){
-    document.getElementById("infoLokasi").innerHTML = "⚠️ Tidak bisa membaca lokasi: " + err.message;
-    lokasiValid = false;
-    kodeSaatIni = "";
-    sembunyikanKode();
-}
-
-function hitungJarak(lat1, lng1, lat2, lng2){
-    const R = 6371000;
-    const dLat = (lat2-lat1)*Math.PI/180;
-    const dLng = (lng2-lng1)*Math.PI/180;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
-// === BUAT KODE ===
-function buatKodeBaru(){
+// === TAMPILKAN TANGGAL DAN JAM ===
+function tampilTanggal(){
+    const hari = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
     const sekarang = new Date();
     const tgl = sekarang.getDate();
     const bln = sekarang.getMonth()+1;
     const thn = sekarang.getFullYear();
-    const jam = sekarang.getHours();
-    kodeSaatIni = (tgl*bln*jam*thn).toString(36).toUpperCase().substring(0,6);
+    const jam = sekarang.toTimeString().substr(0,8);
+    document.getElementById("tglSekarang").textContent = `${hari[sekarang.getDay()]}, ${tgl}/${bln}/${thn}`;
+    document.getElementById("jamSekarang").textContent = jam;
 }
+setInterval(tampilTanggal, 1000);
+tampilTanggal();
 
-function tampilkanKode(){
-    document.getElementById("kotakKode").style.display = "block";
-    document.getElementById("nilaiKode").textContent = kodeSaatIni;
-    document.getElementById("labelKode").style.display = "block";
-    document.getElementById("masukkanKode").style.display = "block";
-}
-
-function sembunyikanKode(){
-    document.getElementById("kotakKode").style.display = "none";
-    document.getElementById("labelKode").style.display = "none";
-    document.getElementById("masukkanKode").style.display = "none";
-}
-
-// === PILIH KETERANGAN ===
-function cekKeteranganAbsen(){
-    const keterangan = document.getElementById("keteranganPilih").value;
-    const nama = document.getElementById("namaPilih").value;
-    const orang = DAFTAR.find(o => o.nama === nama);
-    const bebasLokasi = orang ? orang.bebasLokasi : false;
-
-    if(keterangan === "Sakit" || keterangan === "Izin"){
-        sembunyikanKode();
-        document.getElementById("infoLokasi").innerHTML = "🏠 Bebas lokasi — Sakit/Izin";
-        return;
-    }
-    if(keterangan === "Hadir"){
-        if(bebasLokasi){
-            sembunyikanKode();
-            document.getElementById("infoLokasi").innerHTML = "👑 Bebas lokasi — Tidak perlu ke kantor";
-        } else if(lokasiValid){
-            tampilkanKode();
-        } else {
-            sembunyikanKode();
+// === AMBIL LOKASI ===
+let lokasiDiterima = false;
+if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+        (pos)=>{
+            document.getElementById("lokasi").textContent = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)} — Diterima`;
+            lokasiDiterima = true;
+        },
+        (err)=>{
+            document.getElementById("lokasi").textContent = "Tidak didapatkan";
         }
-    }
+    );
 }
 
-// === PILIH NAMA ===
-function cekKhususBebasLokasi(){
-    const nama = document.getElementById("namaPilih").value;
-    const orang = DAFTAR.find(o => o.nama === nama);
-    if(orang){
-        document.getElementById("jabatanTampil").value = orang.jabatan;
-        if(orang.bebasLokasi){
-            document.getElementById("keteranganPilih").value = "Hadir";
-            sembunyikanKode();
-            document.getElementById("infoLokasi").innerHTML = "👑 Bebas lokasi — Tidak perlu ke kantor";
-        } else {
-            cekKeteranganAbsen();
-        }
-    } else {
-        document.getElementById("jabatanTampil").value = "";
-    }
-}
-
-// === CEK JAM ABSEN ===
-function cekJamAbsen(){
+// === KIRIM ABSEN ===
+function kirimAbsen(){
+    const nama = document.getElementById("nama").value;
+    const jabatan = DAFTAR[nama];
+    const keterangan = document.getElementById("keterangan").value;
     const sekarang = new Date();
-    const jam = sekarang.getHours();
-    const menit = sekarang.getMinutes();
-    const totalMenit = jam * 60 + menit;
+    const jam = sekarang.toTimeString().substr(0,5);
+    const tgl = `${sekarang.getDate()}/${sekarang.getMonth()+1}/${sekarang.getFullYear()}`;
+    const jamMenit = sekarang.getHours()*60 + sekarang.getMinutes();
 
-    const bukaMenit = JAM_BUKA * 60 + MENIT_BUKA;
-    const tepatMenit = JAM_TEPAT * 60 + MENIT_TEPAT;
-    const tutupMenit = JAM_TUTUP * 60 + MENIT_TUTUP;
-
-    if(totalMenit < bukaMenit || totalMenit >= tutupMenit){
-        return {bisaAbsen: false, status: "DILUAR JAM"};
-    } else if(totalMenit <= tepatMenit){
-        return {bisaAbsen: true, status: "Hadir", warna: "hijau"};
-    } else {
-        return {bisaAbsen: true, status: "Terlambat", warna: "merah"};
-    }
-}
-
-// === PROSES ABSEN ===
-async function kirimAbsen(){
-    const nama = document.getElementById("namaPilih").value;
-    const jabatan = document.getElementById("jabatanTampil").value;
-    let keterangan = document.getElementById("keteranganPilih").value;
-    const kodeYangDimasukkan = document.getElementById("masukkanKode").value.trim().toUpperCase();
-    const pesan = document.getElementById("pesan");
-    const orang = DAFTAR.find(o => o.nama === nama);
-    const bebasLokasi = orang ? orang.bebasLokasi : false;
-
-    // === CEK HARI LIBUR ===
-    if(cekHariLibur()){
-        pesan.textContent = "🚫 HARI INI LIBUR NASIONAL — TIDAK ADA ABSENSI";
-        pesan.className = "pesan salah"; return;
+    // Cek waktu absen
+    if(jamMenit < 7*60){
+        tampilStatus("❌ Belum jam absen. Mulai jam 07.01", "gagal");
+        return;
     }
 
     if(!nama){
-        pesan.textContent = "⚠️ Silakan pilih nama Anda dulu!";
-        pesan.className = "pesan salah"; return;
-    }
-    if(!keterangan){
-        pesan.textContent = "⚠️ Silakan pilih keterangan absen!";
-        pesan.className = "pesan salah"; return;
-    }
-
-    // === SAKIT / IZIN ===
-    if(keterangan === "Sakit" || keterangan === "Izin"){
-        simpanAbsen(nama, jabatan, keterangan, "-");
+        tampilStatus("❌ Silakan pilih nama dulu", "gagal");
         return;
     }
 
-    // === HADIR ===
-    if(keterangan === "Hadir"){
-        const jamCek = cekJamAbsen();
-        if(!jamCek.bisaAbsen){
-            pesan.textContent = "❌ Belum masuk jam absen! Mulai jam 07:00 s/d 13:00";
-            pesan.className = "pesan salah"; return;
-        }
-
-        // === KEPALA DESA & SEMUA KASUN — Bebas lokasi & tanpa kode ===
-        if(bebasLokasi){
-            const sudahDipakai = await cekHpTerpakai();
-            if(sudahDipakai){
-                pesan.textContent = "❌ HP INI SUDAH DIPAKAI ABSEN HARI INI! Gunakan HP sendiri!";
-                pesan.className = "pesan salah"; return;
-            }
-            await tandaiHpTerpakai(nama);
-            simpanAbsen(nama, jabatan, jamCek.status, jamCek.warna);
-            return;
-        }
-
-        // === PERANGKAT DI KANTOR — Wajib lokasi & kode ===
-        if(!lokasiValid || kodeSaatIni === ""){
-            pesan.textContent = "❌ Kode tidak muncul! Pastikan Anda berada di kantor!";
-            pesan.className = "pesan salah"; return;
-        }
-        if(kodeYangDimasukkan !== kodeSaatIni){
-            pesan.textContent = "❌ Kode yang dimasukkan SALAH!";
-            pesan.className = "pesan salah"; return;
-        }
-        const sudahDipakai = await cekHpTerpakai();
-        if(sudahDipakai){
-            pesan.textContent = "❌ HP INI SUDAH DIPAKAI ABSEN HARI INI! Gunakan HP sendiri!";
-            pesan.className = "pesan salah"; return;
-        }
-        await tandaiHpTerpakai(nama);
-        keterangan = jamCek.status;
-        const warnaJam = jamCek.warna;
-        simpanAbsen(nama, jabatan, keterangan, warnaJam);
+    if(!lokasiDiterima && nama !== "MUHAMAD HASYIM"){
+        tampilStatus("⏳ Menunggu lokasi... coba lagi sebentar", "gagal");
         return;
     }
-}
 
-// === SIMPAN DATA ABSEN ===
-function simpanAbsen(nama, jabatan, keterangan, warna){
-    const sekarang = new Date();
-    const tgl = sekarang.getDate() + "/" + (sekarang.getMonth()+1) + "/" + sekarang.getFullYear();
-    const jam = sekarang.getHours() + "." + String(sekarang.getMinutes()).padStart(2,"0");
-
-    db.push({
+    const data = {
         nama: nama,
         jabatan: jabatan,
         tgl: tgl,
         jam: jam,
         ket: keterangan,
-        warna: warna,
         waktu: sekarang.toISOString()
-    }).then(()=>{
-        const pesan = document.getElementById("pesan");
-        pesan.textContent = "✅ ABSEN BERHASIL! Terima kasih!";
-        pesan.className = "pesan sukses";
-        document.getElementById("masukkanKode").value = "";
-        setTimeout(()=>{ pesan.style.display = "none"; }, 5000);
-    }).catch((err)=>{
-        const pesan = document.getElementById("pesan");
-        pesan.textContent = "❌ Gagal: " + err.message;
-        pesan.className = "pesan salah";
+    };
+
+    document.getElementById("btnAbsen").disabled = true;
+    tampilStatus("⏳ Sedang dikirim...", "");
+
+    db.push().set(data)
+    .then(()=>{
+        tampilStatus("✅ ABSEN BERHASIL TERKIRIM!", "berhasil");
+    })
+    .catch((err)=>{
+        tampilStatus("❌ Gagal: "+err.message, "gagal");
+        document.getElementById("btnAbsen").disabled = false;
     });
+}
+
+function tampilStatus(pesan, jenis){
+    const el = document.getElementById("status");
+    el.textContent = pesan;
+    el.className = "status " + jenis;
 }
 </script>
 </body>
