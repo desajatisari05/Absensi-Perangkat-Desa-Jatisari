@@ -24,13 +24,11 @@
 <body>
 <div class="wadah">
     <h2>ABSENSI KERJA<br>DESA JATISARI</h2>
-
     <div class="info">
         Hari, Tanggal : <span id="tglSekarang"></span><br>
         Jam Sekarang : <span id="jamSekarang"></span><br>
         Lokasi : <span id="lokasi">Mendeteksi...</span>
     </div>
-
     <label for="nama">Pilih Nama Anda:</label>
     <select id="nama" onchange="isiJabatan()">
         <option value="">-- Pilih Nama --</option>
@@ -47,30 +45,24 @@
         <option value="ANDIK EKA SUDIAWANTO">ANDIK EKA SUDIAWANTO</option>
         <option value="WAHYU HARI P.">WAHYU HARI P.</option>
     </select>
-
     <label for="jabatan">Jabatan:</label>
     <select id="jabatan" disabled>
         <option value="">-- Otomatis --</option>
     </select>
-
     <label for="keterangan">Keterangan Absen:</label>
     <select id="keterangan">
         <option value="Hadir">Hadir</option>
-        <option value="Terlambat">Terlambat</option>
         <option value="Sakit">Sakit</option>
         <option value="Izin">Izin</option>
     </select>
-
     <button id="btnAbsen" onclick="kirimAbsen()">KIRIM ABSEN</button>
-
     <div id="status" class="status"></div>
     <div class="catatan">
-        📌 Hadir: 07.21 – 08.30<br>
-        ⚠️ Terlambat: 08.31 – 14.00<br>
+        📌 Hadir: 07.21 – 08.30 (Tepat Waktu)<br>
+        ⚠️ Jam 08.31 ke atas → Otomatis Terlambat<br>
         ✖ Sebelum 07.00 tidak bisa absen
     </div>
 </div>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script>
@@ -85,7 +77,6 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("dataAbsen");
-
 // === DAFTAR NAMA DAN JABATAN ===
 const DAFTAR = {
     "MUHAMAD HASYIM": "Kepala Desa",
@@ -101,14 +92,12 @@ const DAFTAR = {
     "ANDIK EKA SUDIAWANTO": "Kasun Cerme Kulon",
     "WAHYU HARI P.": "Kasun Krajan"
 };
-
 // === ISI JABATAN OTOMATIS ===
 function isiJabatan(){
     const nama = document.getElementById("nama").value;
     const jabatan = document.getElementById("jabatan");
     jabatan.innerHTML = nama ? `<option value="${DAFTAR[nama]}">${DAFTAR[nama]}</option>` : `<option value="">-- Otomatis --</option>`;
 }
-
 // === TAMPILKAN TANGGAL DAN JAM ===
 function tampilTanggal(){
     const hari = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
@@ -122,7 +111,6 @@ function tampilTanggal(){
 }
 setInterval(tampilTanggal, 1000);
 tampilTanggal();
-
 // === AMBIL LOKASI ===
 let lokasiDiterima = false;
 if(navigator.geolocation){
@@ -136,7 +124,6 @@ if(navigator.geolocation){
         }
     );
 }
-
 // === KIRIM ABSEN ===
 function kirimAbsen(){
     const nama = document.getElementById("nama").value;
@@ -152,15 +139,21 @@ function kirimAbsen(){
         tampilStatus("❌ Belum jam absen. Mulai jam 07.01", "gagal");
         return;
     }
-
     if(!nama){
         tampilStatus("❌ Silakan pilih nama dulu", "gagal");
         return;
     }
-
     if(!lokasiDiterima && nama !== "MUHAMAD HASYIM"){
         tampilStatus("⏳ Menunggu lokasi... coba lagi sebentar", "gagal");
         return;
+    }
+
+    // Otomatis tentukan Hadir / Terlambat berdasarkan jam
+    let statusAbsen = keterangan;
+    if(keterangan === "Hadir"){
+        if(jamMenit >= 8*60+31 && jamMenit <= 14*60){
+            statusAbsen = "Terlambat";
+        }
     }
 
     const data = {
@@ -168,7 +161,7 @@ function kirimAbsen(){
         jabatan: jabatan,
         tgl: tgl,
         jam: jam,
-        ket: keterangan,
+        ket: statusAbsen,
         waktu: sekarang.toISOString()
     };
 
@@ -184,7 +177,6 @@ function kirimAbsen(){
         document.getElementById("btnAbsen").disabled = false;
     });
 }
-
 function tampilStatus(pesan, jenis){
     const el = document.getElementById("status");
     el.textContent = pesan;
