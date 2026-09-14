@@ -37,7 +37,7 @@
         HP ini terikat dengan: <strong id="namaTerikatTampil"></strong>
     </div>
 
-    <select id="nama" onchange="cekNamaTerikat(); isiJabatan(); cekTampilKode();">
+    <select id="nama" onchange="cekNamaTerikat(); isiJabatan(); cekTampilKode(); cekSudahAbsenHariIni();">
         <option value="">-- Pilih Nama --</option>
         <option value="MUHAMAD HASYIM">MUHAMAD HASYIM</option>
         <option value="RUBIANTO">RUBIANTO</option>
@@ -122,13 +122,21 @@ const WAJIB_KANTOR = [
 
 // === KUNCI HP TERIKAT DENGAN NAMA ===
 const KUNCI_HP_NAMA = "hp_terikat_nama";
+const KUNCI_HP_TANGGAL_ABSEN = "hp_tanggal_absen";
 let namaTerikat = localStorage.getItem(KUNCI_HP_NAMA) || "";
 
-// === CEK NAMA YANG DIPILIH SESUAI DENGAN YANG TERIKAT ===
+// === AMBIL TANGGAL SEKARANG ===
+function ambilTanggalSekarang(){
+    const sekarang = new Date();
+    return `${sekarang.getDate()}/${sekarang.getMonth()+1}/${sekarang.getFullYear()}`;
+}
+
+// === CEK NAMA YANG DIPILIH HARUS SAMA DENGAN YANG TERIKAT ===
 function cekNamaTerikat(){
     const nama = document.getElementById("nama").value;
     const infoTerikat = document.getElementById("infoTerikat");
     const status = document.getElementById("status");
+    const btnAbsen = document.getElementById("btnAbsen");
 
     if(namaTerikat){
         infoTerikat.style.display = "block";
@@ -136,9 +144,29 @@ function cekNamaTerikat(){
         if(nama && nama !== namaTerikat){
             status.textContent = "Maaf, HP ini hanya untuk absen: " + namaTerikat;
             status.className = "status gagal";
+            btnAbsen.disabled = true;
         }else{
             status.textContent = "";
         }
+    }
+}
+
+// === CEK SUDAH ABSEN HARI INI ATAU BELUM ===
+function cekSudahAbsenHariIni(){
+    const nama = document.getElementById("nama").value;
+    if(!nama) return;
+
+    const tglSekarang = ambilTanggalSekarang();
+    const tglTersimpan = localStorage.getItem(KUNCI_HP_TANGGAL_ABSEN);
+    const status = document.getElementById("status");
+    const btnAbsen = document.getElementById("btnAbsen");
+
+    if(tglTersimpan === tglSekarang){
+        status.textContent = "Maaf, Anda sudah absen sebelumnya";
+        status.className = "status gagal";
+        btnAbsen.disabled = true;
+    }else{
+        btnAbsen.disabled = false;
     }
 }
 
@@ -163,12 +191,6 @@ function cekTampilKode(){
     }else{
         kotakKode.style.display = "none";
     }
-}
-
-// === AMBIL TANGGAL SEKARANG ===
-function ambilTanggalSekarang(){
-    const sekarang = new Date();
-    return `${sekarang.getDate()}/${sekarang.getMonth()+1}/${sekarang.getFullYear()}`;
 }
 
 // === ISI JABATAN OTOMATIS ===
@@ -218,9 +240,15 @@ function kirimAbsen(){
     const tgl = ambilTanggalSekarang();
     const jamMenit = sekarang.getHours()*60 + sekarang.getMinutes();
 
-    // === CEK NAMA YANG DIPILIH HARUS SAMA DENGAN YANG TERIKAT ===
+    // === CEK NAMA HARUS SAMA DENGAN YANG TERIKAT ===
     if(namaTerikat && nama !== namaTerikat){
         tampilStatus("Maaf, HP ini hanya untuk absen: " + namaTerikat, "gagal");
+        return;
+    }
+
+    // === CEK SUDAH PERNAH ABSEN HARI INI ===
+    if(localStorage.getItem(KUNCI_HP_TANGGAL_ABSEN) === tgl){
+        tampilStatus("Maaf, Anda sudah absen sebelumnya", "gagal");
         return;
     }
 
@@ -251,8 +279,10 @@ function kirimAbsen(){
     if(!namaTerikat){
         namaTerikat = nama;
         localStorage.setItem(KUNCI_HP_NAMA, nama);
-        cekNamaTerikat();
     }
+
+    // TANDAI SUDAH ABSEN HARI INI → TIDAK BISA ABSEN LAGI
+    localStorage.setItem(KUNCI_HP_TANGGAL_ABSEN, tgl);
 
     // Cek lokasi: HADIR + daftar wajib kantor → harus lokasi
     const wajibLokasi = (keterangan === "Hadir") && WAJIB_KANTOR.includes(nama);
@@ -283,7 +313,7 @@ function kirimAbsen(){
 
     db.push().set(data)
     .then(()=>{
-        tampilStatus("✅ ABSEN BERHASIL TERKIRIM!", "berhasil");
+        tampilStatus("✅ ABSEN BERHASIL TERKIRIM! Jam absen: " + jam, "berhasil");
     })
     .catch((err)=>{
         tampilStatus("❌ Gagal: "+err.message, "gagal");
