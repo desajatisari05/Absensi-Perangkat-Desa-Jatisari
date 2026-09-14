@@ -21,7 +21,7 @@
         .status {margin-top:12px; padding:12px; border-radius:6px; font-weight:bold; text-align:center; font-size:15px;}
         .berhasil {background:#c8e6c9; color:#256029;}
         .gagal {background:#ffcdd2; color:#c62828;}
-        .sudah-absen {background:#e3f2fd; color:#0d47a1; padding:10px; border-radius:6px; margin-bottom:10px; text-align:center; display:none;}
+        .info-terikat {background:#e3f2fd; color:#0d47a1; padding:10px; border-radius:6px; margin-bottom:10px; text-align:center; display:none;}
     </style>
 </head>
 <body>
@@ -33,11 +33,11 @@
         Lokasi : <span id="lokasi">Mendeteksi...</span>
     </div>
 
-    <div id="sudahAbsenInfo" class="sudah-absen">
-        ✅ Anda sudah absen hari ini pada jam: <span id="jamSudahAbsen"></span>
+    <div id="infoTerikat" class="info-terikat" style="display:none;">
+        HP ini terikat dengan: <strong id="namaTerikatTampil"></strong>
     </div>
 
-    <select id="nama" onchange="isiJabatan(); cekTampilKode(); cekSudahAbsen();">
+    <select id="nama" onchange="cekNamaTerikat(); isiJabatan(); cekTampilKode();">
         <option value="">-- Pilih Nama --</option>
         <option value="MUHAMAD HASYIM">MUHAMAD HASYIM</option>
         <option value="RUBIANTO">RUBIANTO</option>
@@ -120,6 +120,28 @@ const WAJIB_KANTOR = [
     "WIJI SAHRONI"
 ];
 
+// === KUNCI HP TERIKAT DENGAN NAMA ===
+const KUNCI_HP_NAMA = "hp_terikat_nama";
+let namaTerikat = localStorage.getItem(KUNCI_HP_NAMA) || "";
+
+// === CEK NAMA YANG DIPILIH SESUAI DENGAN YANG TERIKAT ===
+function cekNamaTerikat(){
+    const nama = document.getElementById("nama").value;
+    const infoTerikat = document.getElementById("infoTerikat");
+    const status = document.getElementById("status");
+
+    if(namaTerikat){
+        infoTerikat.style.display = "block";
+        document.getElementById("namaTerikatTampil").textContent = namaTerikat;
+        if(nama && nama !== namaTerikat){
+            status.textContent = "Maaf, HP ini hanya untuk absen: " + namaTerikat;
+            status.className = "status gagal";
+        }else{
+            status.textContent = "";
+        }
+    }
+}
+
 // === KODE ABSEN BERUBAH OTOMATIS SETIAP HARI ===
 function kodeHariIni(){
     const sekarang = new Date();
@@ -143,44 +165,10 @@ function cekTampilKode(){
     }
 }
 
-// === CEK SUDAH ABSEN HARI INI ATAU BELUM ===
-let sudahAbsen = false;
-const KUNCI_HP = "hp_terikat_nama";
-let namaTerikat = localStorage.getItem(KUNCI_HP) || "";
-
+// === AMBIL TANGGAL SEKARANG ===
 function ambilTanggalSekarang(){
     const sekarang = new Date();
     return `${sekarang.getDate()}/${sekarang.getMonth()+1}/${sekarang.getFullYear()}`;
-}
-
-function cekSudahAbsen(){
-    const nama = document.getElementById("nama").value;
-    if(!nama) return;
-
-    const tglSekarang = ambilTanggalSekarang();
-    const infoSudah = document.getElementById("sudahAbsenInfo");
-    const btnAbsen = document.getElementById("btnAbsen");
-    const status = document.getElementById("status");
-    status.textContent = "";
-
-    db.orderByChild("nama").equalTo(nama).once("value", (snapshot)=>{
-        sudahAbsen = false;
-        snapshot.forEach((child)=>{
-            const data = child.val();
-            if(data.tgl === tglSekarang){
-                sudahAbsen = true;
-                infoSudah.style.display = "block";
-                document.getElementById("jamSudahAbsen").textContent = data.jam;
-                btnAbsen.disabled = true;
-                status.textContent = "Maaf, Anda sudah absen sebelumnya";
-                status.className = "status gagal";
-            }
-        });
-        if(!sudahAbsen){
-            infoSudah.style.display = "none";
-            btnAbsen.disabled = false;
-        }
-    });
 }
 
 // === ISI JABATAN OTOMATIS ===
@@ -230,6 +218,12 @@ function kirimAbsen(){
     const tgl = ambilTanggalSekarang();
     const jamMenit = sekarang.getHours()*60 + sekarang.getMinutes();
 
+    // === CEK NAMA YANG DIPILIH HARUS SAMA DENGAN YANG TERIKAT ===
+    if(namaTerikat && nama !== namaTerikat){
+        tampilStatus("Maaf, HP ini hanya untuk absen: " + namaTerikat, "gagal");
+        return;
+    }
+
     // Cek waktu absen
     if(jamMenit < 7*60){
         tampilStatus("❌ Belum jam absen. Mulai jam 07.01", "gagal");
@@ -253,16 +247,11 @@ function kirimAbsen(){
         return;
     }
 
-    // CEK LAGI SUDAH ABSEN ATAU BELUM — JIKA SUDAH TIDAK BOLEH KIRIM ULANG
-    if(sudahAbsen){
-        tampilStatus("Maaf, Anda sudah absen sebelumnya", "gagal");
-        return;
-    }
-
-    // Saat pertama kali absen → ikatkan HP dengan nama ini
+    // Saat pertama kali absen → IKAT HP DENGAN NAMA INI SELAMANYA
     if(!namaTerikat){
         namaTerikat = nama;
-        localStorage.setItem(KUNCI_HP, nama);
+        localStorage.setItem(KUNCI_HP_NAMA, nama);
+        cekNamaTerikat();
     }
 
     // Cek lokasi: HADIR + daftar wajib kantor → harus lokasi
@@ -294,10 +283,7 @@ function kirimAbsen(){
 
     db.push().set(data)
     .then(()=>{
-        sudahAbsen = true;
-        document.getElementById("sudahAbsenInfo").style.display = "block";
-        document.getElementById("jamSudahAbsen").textContent = jam;
-        tampilStatus("✅ ABSEN BERHASIL TERKIRIM! Jam absen: " + jam, "berhasil");
+        tampilStatus("✅ ABSEN BERHASIL TERKIRIM!", "berhasil");
     })
     .catch((err)=>{
         tampilStatus("❌ Gagal: "+err.message, "gagal");
@@ -310,6 +296,9 @@ function tampilStatus(pesan, jenis){
     el.textContent = pesan;
     el.className = "status " + jenis;
 }
+
+// === SAAT HALAMAN DIBUKA ===
+cekNamaTerikat();
 </script>
 </body>
 </html>
