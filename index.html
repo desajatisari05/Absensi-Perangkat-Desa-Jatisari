@@ -21,7 +21,6 @@
         .status {margin-top:12px; padding:12px; border-radius:6px; font-weight:bold; text-align:center; font-size:15px;}
         .berhasil {background:#c8e6c9; color:#256029;}
         .gagal {background:#ffcdd2; color:#c62828;}
-        .info-terikat {background:#e3f2fd; color:#0d47a1; padding:10px; border-radius:6px; margin-bottom:10px; text-align:center; display:none;}
     </style>
 </head>
 <body>
@@ -31,10 +30,6 @@
         Hari, Tanggal : <span id="tglSekarang"></span><br>
         Jam Sekarang : <span id="jamSekarang"></span><br>
         Lokasi : <span id="lokasi">Mendeteksi...</span>
-    </div>
-
-    <div id="infoTerikat" class="info-terikat" style="display:none;">
-        HP ini terikat dengan: <strong id="namaTerikatTampil"></strong>
     </div>
 
     <select id="nama" onchange="cekNamaTerikat(); isiJabatan(); cekTampilKode(); cekSudahAbsenHariIni();">
@@ -120,7 +115,7 @@ const WAJIB_KANTOR = [
     "WIJI SAHRONI"
 ];
 
-// === KUNCI HP TERIKAT DENGAN NAMA ===
+// === KUNCI HP TERIKAT DENGAN NAMA (TIDAK DITAMPILKAN, TETAP BEKERJA) ===
 const KUNCI_HP_NAMA = "hp_terikat_nama";
 const KUNCI_HP_TANGGAL_ABSEN = "hp_tanggal_absen";
 let namaTerikat = localStorage.getItem(KUNCI_HP_NAMA) || "";
@@ -134,28 +129,18 @@ function ambilTanggalSekarang(){
 // === CEK NAMA YANG DIPILIH HARUS SAMA DENGAN YANG TERIKAT ===
 function cekNamaTerikat(){
     const nama = document.getElementById("nama").value;
-    const infoTerikat = document.getElementById("infoTerikat");
     const status = document.getElementById("status");
     const btnAbsen = document.getElementById("btnAbsen");
 
-    if(namaTerikat){
-        infoTerikat.style.display = "block";
-        document.getElementById("namaTerikatTampil").textContent = namaTerikat;
-        if(nama && nama !== namaTerikat){
-            status.textContent = "Maaf, HP ini hanya untuk absen: " + namaTerikat;
-            status.className = "status gagal";
-            btnAbsen.disabled = true;
-        }else{
-            status.textContent = "";
-        }
+    if(namaTerikat && nama && nama !== namaTerikat){
+        status.textContent = "Maaf, HP ini hanya untuk absen: " + namaTerikat;
+        status.className = "status gagal";
+        btnAbsen.disabled = true;
     }
 }
 
 // === CEK SUDAH ABSEN HARI INI ATAU BELUM ===
 function cekSudahAbsenHariIni(){
-    const nama = document.getElementById("nama").value;
-    if(!nama) return;
-
     const tglSekarang = ambilTanggalSekarang();
     const tglTersimpan = localStorage.getItem(KUNCI_HP_TANGGAL_ABSEN);
     const status = document.getElementById("status");
@@ -165,8 +150,6 @@ function cekSudahAbsenHariIni(){
         status.textContent = "Maaf, Anda sudah absen sebelumnya";
         status.className = "status gagal";
         btnAbsen.disabled = true;
-    }else{
-        btnAbsen.disabled = false;
     }
 }
 
@@ -326,9 +309,6 @@ function tampilStatus(pesan, jenis){
     el.textContent = pesan;
     el.className = "status " + jenis;
 }
-
-// === SAAT HALAMAN DIBUKA ===
-cekNamaTerikat();
 </script>
 </body>
 </html>
