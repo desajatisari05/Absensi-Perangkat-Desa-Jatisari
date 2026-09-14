@@ -11,6 +11,7 @@
         h2 {text-align:center; font-size:18px; margin-bottom:15px; color:#2e7d32; font-weight:bold;}
         .info {background:#e8f5e9; padding:10px; border-radius:6px; margin-bottom:12px; font-size:14px; line-height:1.6;}
         .info span {font-weight:bold; color:#1b5e20;}
+        .terikat {background:#fff3cd; padding:10px; border-radius:6px; margin-bottom:12px; border-left:4px solid #ffc107;}
         label {display:block; margin:10px 0 5px 0; font-weight:bold; font-size:14px;}
         select, button {width:100%; padding:12px; font-size:15px; border-radius:6px; border:1px solid #ccc;}
         button {background:#2e7d32; color:#fff; border:none; margin-top:12px; font-weight:bold; cursor:pointer;}
@@ -29,6 +30,8 @@
         Jam Sekarang : <span id="jamSekarang"></span><br>
         Lokasi : <span id="lokasi">Mendeteksi...</span>
     </div>
+    <div id="infoTerikat" class="terikat" style="display:none;"></div>
+
     <label for="nama">Pilih Nama Anda:</label>
     <select id="nama" onchange="isiJabatan()">
         <option value="">-- Pilih Nama --</option>
@@ -45,24 +48,29 @@
         <option value="ANDIK EKA SUDIAWANTO">ANDIK EKA SUDIAWANTO</option>
         <option value="WAHYU HARI P.">WAHYU HARI P.</option>
     </select>
+
     <label for="jabatan">Jabatan:</label>
     <select id="jabatan" disabled>
         <option value="">-- Otomatis --</option>
     </select>
+
     <label for="keterangan">Keterangan Absen:</label>
     <select id="keterangan">
         <option value="Hadir">Hadir</option>
         <option value="Sakit">Sakit</option>
         <option value="Izin">Izin</option>
     </select>
+
     <button id="btnAbsen" onclick="kirimAbsen()">KIRIM ABSEN</button>
     <div id="status" class="status"></div>
     <div class="catatan">
         📌 Hadir: 07.21 – 08.30 (Tepat Waktu)<br>
         ⚠️ Jam 08.31 ke atas → Otomatis Terlambat<br>
-        ✖ Sebelum 07.00 tidak bisa absen
+        ✖ Sebelum 07.00 tidak bisa absen<br>
+        🔒 1 HP = 1 Orang, tidak bisa dipakai orang lain
     </div>
 </div>
+
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script>
@@ -104,6 +112,23 @@ const WAJIB_KANTOR = [
     "NISFUL LAILI IKA J.",
     "WIJI SAHRONI"
 ];
+
+// === CEK HP SUDAH TERIKAT DENGAN NAMA SIAPA ===
+const KUNCI_HP = "hp_terikat_nama";
+let namaTerikat = localStorage.getItem(KUNCI_HP) || "";
+
+// === TAMPILKAN INFORMASI JIKA SUDAH TERIKAT ===
+function cekIkatanHP(){
+    const info = document.getElementById("infoTerikat");
+    const selNama = document.getElementById("nama");
+    if(namaTerikat){
+        info.style.display = "block";
+        info.innerHTML = "🔒 HP ini terikat dengan: <strong>" + namaTerikat + "</strong><br>Tidak bisa ganti nama!";
+        selNama.value = namaTerikat;
+        selNama.disabled = true;
+        isiJabatan();
+    }
+}
 
 // === ISI JABATAN OTOMATIS ===
 function isiJabatan(){
@@ -160,7 +185,14 @@ function kirimAbsen(){
         return;
     }
 
-    // === CEK LOKASI: HADIR → wajib kantor; SAKIT/IZIN & KEPALA DESA/KASUN → bebas ===
+    // Saat pertama kali absen → ikatkan HP dengan nama ini
+    if(!namaTerikat){
+        namaTerikat = nama;
+        localStorage.setItem(KUNCI_HP, nama);
+        cekIkatanHP();
+    }
+
+    // Cek lokasi: HADIR + daftar wajib kantor → harus lokasi
     const wajibLokasi = (keterangan === "Hadir") && WAJIB_KANTOR.includes(nama);
     if(wajibLokasi && !lokasiDiterima){
         tampilStatus("⏳ Menunggu lokasi kantor... coba lagi sebentar", "gagal");
@@ -196,11 +228,15 @@ function kirimAbsen(){
         document.getElementById("btnAbsen").disabled = false;
     });
 }
+
 function tampilStatus(pesan, jenis){
     const el = document.getElementById("status");
     el.textContent = pesan;
     el.className = "status " + jenis;
 }
+
+// === SAAT HALAMAN DIBUKA ===
+cekIkatanHP();
 </script>
 </body>
 </html>
