@@ -11,9 +11,12 @@
         h2 {text-align:center; font-size:18px; margin-bottom:15px; color:#2e7d32; font-weight:bold;}
         .info {background:#e8f5e9; padding:10px; border-radius:6px; margin-bottom:12px; font-size:14px; line-height:1.6;}
         .info span {font-weight:bold; color:#1b5e20;}
+        .kode-harian {background:#fff9c4; padding:12px; border-radius:6px; margin-bottom:12px; text-align:center; border:2px solid #fdd835;}
+        .kode-harian .angka {font-size:28px; font-weight:bold; color:#e65100; letter-spacing:6px; margin-top:4px;}
         .terikat {background:#fff3cd; padding:10px; border-radius:6px; margin-bottom:12px; border-left:4px solid #ffc107;}
         label {display:block; margin:10px 0 5px 0; font-weight:bold; font-size:14px;}
-        select, button {width:100%; padding:12px; font-size:15px; border-radius:6px; border:1px solid #ccc;}
+        input, select, button {width:100%; padding:12px; font-size:15px; border-radius:6px; border:1px solid #ccc;}
+        input {letter-spacing:3px; font-weight:bold; text-align:center;}
         button {background:#2e7d32; color:#fff; border:none; margin-top:12px; font-weight:bold; cursor:pointer;}
         button:disabled {background:#ccc; cursor:not-allowed;}
         .status {margin-top:15px; padding:12px; border-radius:6px; font-weight:bold; text-align:center; font-size:15px;}
@@ -30,6 +33,12 @@
         Jam Sekarang : <span id="jamSekarang"></span><br>
         Lokasi : <span id="lokasi">Mendeteksi...</span>
     </div>
+
+    <div class="kode-harian">
+        🔑 KODE ABSEN HARI INI:<br>
+        <div class="angka" id="tampilKode"></div>
+    </div>
+
     <div id="infoTerikat" class="terikat" style="display:none;"></div>
 
     <label for="nama">Pilih Nama Anda:</label>
@@ -54,6 +63,9 @@
         <option value="">-- Otomatis --</option>
     </select>
 
+    <label for="kodeAbsen">Masukkan Kode di Atas:</label>
+    <input type="text" id="kodeAbsen" placeholder="Ketik kode di sini" maxlength="4" autocomplete="off">
+
     <label for="keterangan">Keterangan Absen:</label>
     <select id="keterangan">
         <option value="Hadir">Hadir</option>
@@ -64,6 +76,7 @@
     <button id="btnAbsen" onclick="kirimAbsen()">KIRIM ABSEN</button>
     <div id="status" class="status"></div>
     <div class="catatan">
+        ✅ Kode berubah otomatis setiap hari<br>
         📌 Hadir: 07.21 – 08.30 (Tepat Waktu)<br>
         ⚠️ Jam 08.31 ke atas → Otomatis Terlambat<br>
         ✖ Sebelum 07.00 tidak bisa absen<br>
@@ -112,6 +125,19 @@ const WAJIB_KANTOR = [
     "NISFUL LAILI IKA J.",
     "WIJI SAHRONI"
 ];
+
+// === KODE ABSEN BERUBAH OTOMATIS SETIAP HARI ===
+function kodeHariIni(){
+    const sekarang = new Date();
+    const thn = sekarang.getFullYear();
+    const bln = sekarang.getMonth() + 1;
+    const tgl = sekarang.getDate();
+    const kode = (tgl * 7 + bln * 13 + thn % 100) % 9000 + 1000;
+    return String(kode);
+}
+
+// === TAMPILKAN KODE DI LAYAR ===
+document.getElementById("tampilKode").textContent = kodeHariIni();
 
 // === CEK HP SUDAH TERIKAT DENGAN NAMA SIAPA ===
 const KUNCI_HP = "hp_terikat_nama";
@@ -170,6 +196,8 @@ function kirimAbsen(){
     const nama = document.getElementById("nama").value;
     const jabatan = DAFTAR[nama];
     const keterangan = document.getElementById("keterangan").value;
+    const kodeDiisi = document.getElementById("kodeAbsen").value.trim();
+    const kodeBenar = kodeHariIni();
     const sekarang = new Date();
     const jam = sekarang.toTimeString().substr(0,5);
     const tgl = `${sekarang.getDate()}/${sekarang.getMonth()+1}/${sekarang.getFullYear()}`;
@@ -182,6 +210,15 @@ function kirimAbsen(){
     }
     if(!nama){
         tampilStatus("❌ Silakan pilih nama dulu", "gagal");
+        return;
+    }
+    // Cek kode absen
+    if(!kodeDiisi){
+        tampilStatus("❌ Silakan masukkan KODE ABSEN!", "gagal");
+        return;
+    }
+    if(kodeDiisi !== kodeBenar){
+        tampilStatus("❌ KODE ABSEN SALAH! Periksa kembali", "gagal");
         return;
     }
 
