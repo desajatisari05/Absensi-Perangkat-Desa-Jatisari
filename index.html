@@ -11,7 +11,7 @@
         h2 {text-align:center; font-size:18px; margin-bottom:15px; color:#2e7d32; font-weight:bold;}
         .info {background:#e8f5e9; padding:10px; border-radius:6px; margin-bottom:12px; font-size:14px; line-height:1.6;}
         .info span {font-weight:bold; color:#1b5e20;}
-        .kode-harian {background:#fff9c4; padding:12px; border-radius:6px; margin-bottom:12px; text-align:center; border:2px solid #fdd835;}
+        .kode-harian {background:#fff9c4; padding:12px; border-radius:6px; margin:12px 0; text-align:center; border:2px solid #fdd835; display:none;}
         .kode-harian .angka {font-size:28px; font-weight:bold; color:#e65100; letter-spacing:6px; margin-top:4px;}
         .terikat {background:#fff3cd; padding:10px; border-radius:6px; margin-bottom:12px; border-left:4px solid #ffc107;}
         label {display:block; margin:10px 0 5px 0; font-weight:bold; font-size:14px;}
@@ -34,15 +34,10 @@
         Lokasi : <span id="lokasi">Mendeteksi...</span>
     </div>
 
-    <div class="kode-harian">
-        🔑 KODE ABSEN HARI INI:<br>
-        <div class="angka" id="tampilKode"></div>
-    </div>
-
     <div id="infoTerikat" class="terikat" style="display:none;"></div>
 
     <label for="nama">Pilih Nama Anda:</label>
-    <select id="nama" onchange="isiJabatan()">
+    <select id="nama" onchange="isiJabatan(); cekTampilKode();">
         <option value="">-- Pilih Nama --</option>
         <option value="MUHAMAD HASYIM">MUHAMAD HASYIM</option>
         <option value="RUBIANTO">RUBIANTO</option>
@@ -63,20 +58,26 @@
         <option value="">-- Otomatis --</option>
     </select>
 
-    <label for="kodeAbsen">Masukkan Kode di Atas:</label>
-    <input type="text" id="kodeAbsen" placeholder="Ketik kode di sini" maxlength="4" autocomplete="off">
-
     <label for="keterangan">Keterangan Absen:</label>
-    <select id="keterangan">
+    <select id="keterangan" onchange="cekTampilKode();">
+        <option value="">-- Pilih Keterangan --</option>
         <option value="Hadir">Hadir</option>
         <option value="Sakit">Sakit</option>
         <option value="Izin">Izin</option>
     </select>
 
+    <div class="kode-harian" id="kotakKode">
+        🔑 KODE ABSEN HARI INI:<br>
+        <div class="angka" id="tampilKode"></div>
+    </div>
+
+    <label for="kodeAbsen">Masukkan Kode di Atas:</label>
+    <input type="text" id="kodeAbsen" placeholder="Masukkan kode absen" maxlength="4" autocomplete="off">
+
     <button id="btnAbsen" onclick="kirimAbsen()">KIRIM ABSEN</button>
     <div id="status" class="status"></div>
     <div class="catatan">
-        ✅ Kode berubah otomatis setiap hari<br>
+        ✅ Pilih Nama & Keterangan → Kode muncul otomatis<br>
         📌 Hadir: 07.21 – 08.30 (Tepat Waktu)<br>
         ⚠️ Jam 08.31 ke atas → Otomatis Terlambat<br>
         ✖ Sebelum 07.00 tidak bisa absen<br>
@@ -136,8 +137,18 @@ function kodeHariIni(){
     return String(kode);
 }
 
-// === TAMPILKAN KODE DI LAYAR ===
-document.getElementById("tampilKode").textContent = kodeHariIni();
+// === TAMPILKAN KODE SETELAH PILIH NAMA & KETERANGAN ===
+function cekTampilKode(){
+    const nama = document.getElementById("nama").value;
+    const ket = document.getElementById("keterangan").value;
+    const kotakKode = document.getElementById("kotakKode");
+    if(nama && ket){
+        document.getElementById("tampilKode").textContent = kodeHariIni();
+        kotakKode.style.display = "block";
+    }else{
+        kotakKode.style.display = "none";
+    }
+}
 
 // === CEK HP SUDAH TERIKAT DENGAN NAMA SIAPA ===
 const KUNCI_HP = "hp_terikat_nama";
@@ -210,6 +221,10 @@ function kirimAbsen(){
     }
     if(!nama){
         tampilStatus("❌ Silakan pilih nama dulu", "gagal");
+        return;
+    }
+    if(!keterangan){
+        tampilStatus("❌ Silakan pilih Keterangan Absen", "gagal");
         return;
     }
     // Cek kode absen
