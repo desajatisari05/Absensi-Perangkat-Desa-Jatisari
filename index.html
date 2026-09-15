@@ -11,28 +11,28 @@
         h2 {text-align:center; font-size:18px; margin-bottom:15px; color:#2e7d32; font-weight:bold;}
         .info {background:#e8f5e9; padding:10px; border-radius:6px; margin-bottom:12px; font-size:14px; line-height:1.6;}
         .info span {font-weight:bold; color:#1b5e20;}
-        .kode-harian {background:#fff9c4; padding:12px; border-radius:6px; margin:12px 0 8px 0; text-align:center; border:2px solid #fdd835; display:none;}
-        .kode-harian .angka {font-size:28px; font-weight:bold; color:#e65100; letter-spacing:6px; margin-top:4px;}
         label {display:block; margin:10px 0 5px 0; font-weight:bold; font-size:14px;}
-        input, select, button {width:100%; padding:12px; font-size:15px; border-radius:6px; border:1px solid #ccc;}
-        input {letter-spacing:3px; font-weight:bold; text-align:center; margin-bottom:4px;}
-        button {background:#2e7d32; color:#fff; border:none; margin-top:8px; font-weight:bold; cursor:pointer;}
+        select, button {width:100%; padding:12px; font-size:15px; border-radius:6px; border:1px solid #ccc;}
+        button {background:#2e7d32; color:#fff; border:none; margin-top:12px; font-weight:bold; cursor:pointer;}
         button:disabled {background:#ccc; cursor:not-allowed;}
-        .status {margin-top:12px; padding:12px; border-radius:6px; font-weight:bold; text-align:center; font-size:15px;}
+        .status {margin-top:15px; padding:12px; border-radius:6px; font-weight:bold; text-align:center; font-size:15px;}
         .berhasil {background:#c8e6c9; color:#256029;}
         .gagal {background:#ffcdd2; color:#c62828;}
+        .catatan {margin-top:8px; font-size:13px; color:#555; line-height:1.5;}
     </style>
 </head>
 <body>
 <div class="wadah">
     <h2>ABSENSI KERJA<br>DESA JATISARI</h2>
+
     <div class="info">
         Hari, Tanggal : <span id="tglSekarang"></span><br>
         Jam Sekarang : <span id="jamSekarang"></span><br>
         Lokasi : <span id="lokasi">Mendeteksi...</span>
     </div>
 
-    <select id="nama" onchange="cekNamaTerikat(); isiJabatan(); cekTampilKode(); cekSudahAbsenHariIni();">
+    <label for="nama">Pilih Nama Anda:</label>
+    <select id="nama" onchange="isiJabatan()">
         <option value="">-- Pilih Nama --</option>
         <option value="MUHAMAD HASYIM">MUHAMAD HASYIM</option>
         <option value="RUBIANTO">RUBIANTO</option>
@@ -54,23 +54,21 @@
     </select>
 
     <label for="keterangan">Keterangan Absen:</label>
-    <select id="keterangan" onchange="cekTampilKode();">
-        <option value="">-- Pilih Keterangan --</option>
+    <select id="keterangan">
         <option value="Hadir">Hadir</option>
+        <option value="Terlambat">Terlambat</option>
         <option value="Sakit">Sakit</option>
         <option value="Izin">Izin</option>
     </select>
 
-    <div class="kode-harian" id="kotakKode">
-        🔑 KODE ABSEN HARI INI:<br>
-        <div class="angka" id="tampilKode"></div>
-    </div>
-
-    <label for="kodeAbsen">Masukkan Kode di Atas:</label>
-    <input type="text" id="kodeAbsen" placeholder="Ketik kode di sini" maxlength="4" autocomplete="off">
-
     <button id="btnAbsen" onclick="kirimAbsen()">KIRIM ABSEN</button>
+
     <div id="status" class="status"></div>
+    <div class="catatan">
+        📌 Hadir: 07.21 – 08.30<br>
+        ⚠️ Terlambat: 08.31 – 14.00<br>
+        ✖ Sebelum 07.00 tidak bisa absen
+    </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -103,78 +101,6 @@ const DAFTAR = {
     "ANDIK EKA SUDIAWANTO": "Kasun Cerme Kulon",
     "WAHYU HARI P.": "Kasun Krajan"
 };
-
-// === WAJIB LOKASI KANTOR JIKA PILIH HADIR ===
-const WAJIB_KANTOR = [
-    "RUBIANTO",
-    "ETIK WAHYUNINGSIH",
-    "NURCHOIRIDA NIRWANAH",
-    "ZAINUL FITRIANDI",
-    "IKA NURSASI",
-    "NISFUL LAILI IKA J.",
-    "WIJI SAHRONI"
-];
-
-// === KUNCI HP TERIKAT DENGAN NAMA (TIDAK DITAMPILKAN, TETAP BEKERJA) ===
-const KUNCI_HP_NAMA = "hp_terikat_nama";
-const KUNCI_HP_TANGGAL_ABSEN = "hp_tanggal_absen";
-let namaTerikat = localStorage.getItem(KUNCI_HP_NAMA) || "";
-
-// === AMBIL TANGGAL SEKARANG ===
-function ambilTanggalSekarang(){
-    const sekarang = new Date();
-    return `${sekarang.getDate()}/${sekarang.getMonth()+1}/${sekarang.getFullYear()}`;
-}
-
-// === CEK NAMA YANG DIPILIH HARUS SAMA DENGAN YANG TERIKAT ===
-function cekNamaTerikat(){
-    const nama = document.getElementById("nama").value;
-    const status = document.getElementById("status");
-    const btnAbsen = document.getElementById("btnAbsen");
-
-    if(namaTerikat && nama && nama !== namaTerikat){
-        status.textContent = "Maaf, HP ini hanya untuk absen: " + namaTerikat;
-        status.className = "status gagal";
-        btnAbsen.disabled = true;
-    }
-}
-
-// === CEK SUDAH ABSEN HARI INI ATAU BELUM ===
-function cekSudahAbsenHariIni(){
-    const tglSekarang = ambilTanggalSekarang();
-    const tglTersimpan = localStorage.getItem(KUNCI_HP_TANGGAL_ABSEN);
-    const status = document.getElementById("status");
-    const btnAbsen = document.getElementById("btnAbsen");
-
-    if(tglTersimpan === tglSekarang){
-        status.textContent = "Maaf, Anda sudah absen sebelumnya";
-        status.className = "status gagal";
-        btnAbsen.disabled = true;
-    }
-}
-
-// === KODE ABSEN BERUBAH OTOMATIS SETIAP HARI ===
-function kodeHariIni(){
-    const sekarang = new Date();
-    const thn = sekarang.getFullYear();
-    const bln = sekarang.getMonth() + 1;
-    const tgl = sekarang.getDate();
-    const kode = (tgl * 7 + bln * 13 + thn % 100) % 9000 + 1000;
-    return String(kode);
-}
-
-// === TAMPILKAN KODE SETELAH PILIH NAMA & KETERANGAN ===
-function cekTampilKode(){
-    const nama = document.getElementById("nama").value;
-    const ket = document.getElementById("keterangan").value;
-    const kotakKode = document.getElementById("kotakKode");
-    if(nama && ket){
-        document.getElementById("tampilKode").textContent = kodeHariIni();
-        kotakKode.style.display = "block";
-    }else{
-        kotakKode.style.display = "none";
-    }
-}
 
 // === ISI JABATAN OTOMATIS ===
 function isiJabatan(){
@@ -216,70 +142,25 @@ function kirimAbsen(){
     const nama = document.getElementById("nama").value;
     const jabatan = DAFTAR[nama];
     const keterangan = document.getElementById("keterangan").value;
-    const kodeDiisi = document.getElementById("kodeAbsen").value.trim();
-    const kodeBenar = kodeHariIni();
     const sekarang = new Date();
     const jam = sekarang.toTimeString().substr(0,5);
-    const tgl = ambilTanggalSekarang();
+    const tgl = `${sekarang.getDate()}/${sekarang.getMonth()+1}/${sekarang.getFullYear()}`;
     const jamMenit = sekarang.getHours()*60 + sekarang.getMinutes();
-
-    // === CEK NAMA HARUS SAMA DENGAN YANG TERIKAT ===
-    if(namaTerikat && nama !== namaTerikat){
-        tampilStatus("Maaf, HP ini hanya untuk absen: " + namaTerikat, "gagal");
-        return;
-    }
-
-    // === CEK SUDAH PERNAH ABSEN HARI INI ===
-    if(localStorage.getItem(KUNCI_HP_TANGGAL_ABSEN) === tgl){
-        tampilStatus("Maaf, Anda sudah absen sebelumnya", "gagal");
-        return;
-    }
 
     // Cek waktu absen
     if(jamMenit < 7*60){
         tampilStatus("❌ Belum jam absen. Mulai jam 07.01", "gagal");
         return;
     }
+
     if(!nama){
         tampilStatus("❌ Silakan pilih nama dulu", "gagal");
         return;
     }
-    if(!keterangan){
-        tampilStatus("❌ Silakan pilih Keterangan Absen", "gagal");
-        return;
-    }
-    // Cek kode absen
-    if(!kodeDiisi){
-        tampilStatus("❌ Silakan masukkan KODE ABSEN!", "gagal");
-        return;
-    }
-    if(kodeDiisi !== kodeBenar){
-        tampilStatus("❌ KODE ABSEN SALAH! Periksa kembali", "gagal");
-        return;
-    }
 
-    // Saat pertama kali absen → IKAT HP DENGAN NAMA INI SELAMANYA
-    if(!namaTerikat){
-        namaTerikat = nama;
-        localStorage.setItem(KUNCI_HP_NAMA, nama);
-    }
-
-    // TANDAI SUDAH ABSEN HARI INI → TIDAK BISA ABSEN LAGI
-    localStorage.setItem(KUNCI_HP_TANGGAL_ABSEN, tgl);
-
-    // Cek lokasi: HADIR + daftar wajib kantor → harus lokasi
-    const wajibLokasi = (keterangan === "Hadir") && WAJIB_KANTOR.includes(nama);
-    if(wajibLokasi && !lokasiDiterima){
-        tampilStatus("⏳ Menunggu lokasi kantor... coba lagi sebentar", "gagal");
+    if(!lokasiDiterima && nama !== "MUHAMAD HASYIM"){
+        tampilStatus("⏳ Menunggu lokasi... coba lagi sebentar", "gagal");
         return;
-    }
-
-    // Otomatis tentukan Hadir / Terlambat berdasarkan jam
-    let statusAbsen = keterangan;
-    if(keterangan === "Hadir"){
-        if(jamMenit >= 8*60+31 && jamMenit <= 14*60){
-            statusAbsen = "Terlambat";
-        }
     }
 
     const data = {
@@ -287,7 +168,7 @@ function kirimAbsen(){
         jabatan: jabatan,
         tgl: tgl,
         jam: jam,
-        ket: statusAbsen,
+        ket: keterangan,
         waktu: sekarang.toISOString()
     };
 
@@ -296,7 +177,7 @@ function kirimAbsen(){
 
     db.push().set(data)
     .then(()=>{
-        tampilStatus("✅ ABSEN BERHASIL TERKIRIM! Jam absen: " + jam, "berhasil");
+        tampilStatus("✅ ABSEN BERHASIL TERKIRIM!", "berhasil");
     })
     .catch((err)=>{
         tampilStatus("❌ Gagal: "+err.message, "gagal");
