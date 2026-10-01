@@ -7,28 +7,29 @@
     <style>
         * {font-family: Arial, sans-serif; margin:0; padding:0; box-sizing:border-box;}
         body {background:#f1f8e9; padding:8px; font-size:13px;}
-        .wadah {width:100%; max-width:1200px; margin:0 auto; background:#fff; padding:5px;}
+        .wadah {width:100%; margin:0 auto; background:#fff; padding:5px;}
         h1 {text-align:center; font-size:17px; color:#000; margin-bottom:2px; font-weight:bold;}
         h2 {text-align:center; font-size:13px; margin-bottom:8px; font-weight:normal;}
-        .baris-atas {text-align:center; margin-bottom:8px;}
-        .baris-atas select {padding:3px 6px; font-size:13px;}
-        .status-hubung {color:#2e7d32; font-size:12px; margin:4px 0;}
-        .tombol {padding:7px 14px; font-size:13px; border:none; border-radius:4px; color:#fff; font-weight:bold; cursor:pointer; margin:2px;}
+        .atas {text-align:center; margin-bottom:8px;}
+        .atas select {padding:3px 6px; font-size:13px;}
+        .status {color:#2e7d32; font-size:12px; margin:4px 0;}
+        .btn {padding:7px 14px; font-size:13px; border:none; border-radius:4px; color:#fff; font-weight:bold; cursor:pointer; margin:2px;}
         .hijau {background:#2e7d32;}
         .biru {background:#1976d2;}
         .merah {background:#d32f2f;}
         table {width:100%; border-collapse:collapse; margin-top:5px;}
-        table th, table td {border:1px solid #333; padding:3px 2px; text-align:center; font-size:12px;}
-        table th {background:#e8f5e9; font-weight:bold;}
+        th, td {border:1px solid #333; padding:3px 2px; text-align:center; font-size:12px;}
+        th {background:#e8f5e9; font-weight:bold;}
         .minggu {background:#ffebee; color:#c62828; font-weight:bold;}
+        .huruf-minggu {writing-mode:vertical-lr; letter-spacing:2px;}
         .hadir {color:#2e7d32; font-weight:bold;}
-        .terlambat {color:#c62828; font-weight:bold;}
+        .telat {color:#c62828; font-weight:bold;}
         .kosong {color:#aaa;}
-        .tanda-tangan {margin-top:30px; text-align:right; font-size:13px;}
-        .tanda-tangan .nama {margin-top:50px; font-weight:bold;}
+        .ttd {margin-top:30px; text-align:right; font-size:13px;}
+        .ttd .nama {margin-top:50px; font-weight:bold;}
         @media print {
             body {background:#fff;}
-            .baris-atas, .tombol, .status-hubung {display:none;}
+            .atas, .btn, .status {display:none;}
         }
     </style>
 </head>
@@ -37,21 +38,21 @@
     <h1>ABSENSI KEPALA DESA DAN PERANGKAT DESA JATISARI</h1>
     <h2>KECAMATAN TEMPEH KABUPATEN LUMAJANG</h2>
 
-    <div class="baris-atas">
+    <div class="atas">
         Bulan:
         <select id="pilihBulan" onchange="ubahBulan()"></select>
-        <div class="status-hubung">TERHUBUNG - Data diperbarui otomatis</div>
-        <button class="tombol hijau" onclick="unduhExcel()">Unduh Excel</button>
-        <button class="tombol biru" onclick="window.print()">CETAK BERKAS</button>
-        <button class="tombol merah" onclick="hapusData()">Hapus Semua Data</button>
+        <div class="status">TERHUBUNG - Data diperbarui otomatis</div>
+        <button class="btn hijau" onclick="unduhExcel()">Unduh Excel</button>
+        <button class="btn biru" onclick="window.print()">CETAK BERKAS</button>
+        <button class="btn merah" onclick="hapusSemua()">Hapus Semua Data</button>
     </div>
 
     <table>
-        <thead id="kepalaTabel"></thead>
-        <tbody id="isiTabel"></tbody>
+        <thead id="kepala"></thead>
+        <tbody id="isi"></tbody>
     </table>
 
-    <div class="tanda-tangan">
+    <div class="ttd">
         <div id="tglBawah">Desa Jatisari, 30 SEPTEMBER 2026</div>
         <div>KEPALA DESA JATISARI</div>
         <div class="nama">MUHAMAD HASYIM</div>
@@ -66,9 +67,7 @@ const firebaseConfig = {
   authDomain: "absen-desa-jatisari.firebaseapp.com",
   databaseURL: "https://absen-desa-jatisari-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "absen-desa-jatisari",
-  storageBucket: "absen-desa-jatisari.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abc123def456ghi789jkl0"
+  storageBucket: "absen-desa-jatisari.appspot.com"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("dataAbsen");
@@ -93,16 +92,16 @@ const thnSekarang = new Date().getFullYear();
 const blnSekarang = new Date().getMonth() + 1;
 let blnAktif = blnSekarang;
 
-// === ISI PILIHAN BULAN OTOMATIS ===
-function isiPilihanBulan(){
-    const pilih = document.getElementById("pilihBulan");
-    pilih.innerHTML = "";
+// === PILIHAN BULAN OTOMATIS ===
+function isiBulan(){
+    const sel = document.getElementById("pilihBulan");
+    sel.innerHTML = "";
     for(let b=1; b<=blnSekarang; b++){
-        const opsi = document.createElement("option");
-        opsi.value = b;
-        opsi.textContent = NAMA_BULAN[b-1] + " " + thnSekarang;
-        if(b === blnSekarang) opsi.selected = true;
-        pilih.appendChild(opsi);
+        let opt = document.createElement("option");
+        opt.value = b;
+        opt.textContent = NAMA_BULAN[b-1] + " " + thnSekarang;
+        if(b === blnSekarang) opt.selected = true;
+        sel.appendChild(opt);
     }
 }
 
@@ -111,82 +110,66 @@ function ubahBulan(){
     susunTabel();
 }
 
-let dataAbsen = {};
-db.on("value", (snap)=>{
-    dataAbsen = snap.val() || {};
-    susunTabel();
-});
+let data = {};
+db.on("value", s => { data = s.val() || {}; susunTabel(); });
 
 function susunTabel(){
-    const hariTerakhir = new Date(thnSekarang, blnAktif, 0).getDate();
+    const akhir = new Date(thnSekarang, blnAktif, 0).getDate();
     document.getElementById("tglBawah").textContent = 
-        "Desa Jatisari, " + hariTerakhir + " " + NAMA_BULAN[blnAktif-1] + " " + thnSekarang;
+        "Desa Jatisari, " + akhir + " " + NAMA_BULAN[blnAktif-1] + " " + thnSekarang;
 
-    // === KEPALA TABEL — TANGGAL ===
-    let kepala = `<tr>
+    // Kepala tabel — PERSIS SESUAI ACUAN
+    let kep = `<tr>
         <th rowspan="2">NO</th>
         <th rowspan="2">NAMA</th>
         <th rowspan="2">JABATAN</th>
-        <th colspan="${hariTerakhir}">TANGGAL</th>
+        <th colspan="${akhir}">TANGGAL</th>
     </tr><tr>`;
-    
-    // Baris angka tanggal
-    for(let t=1; t<=hariTerakhir; t++){
+    for(let t=1; t<=akhir; t++){
         const d = new Date(thnSekarang, blnAktif-1, t);
         if(d.getDay() === 0){
-            kepala += `<th class="minggu"></th>`;
+            kep += `<th class="minggu huruf-minggu">M<br>I<br>N<br>G<br>G<br>U</th>`;
         }else{
-            kepala += `<th>${t}</th>`;
+            kep += `<th>${t}</th>`;
         }
     }
-    kepala += `</tr><tr>`;
-    
-    // Baris huruf M-I-N-G-G-U ke bawah
-    for(let t=1; t<=hariTerakhir; t++){
-        const d = new Date(thnSekarang, blnAktif-1, t);
-        if(d.getDay() === 0){
-            kepala += `<th class="minggu">M<br>I<br>N<br>G<br>G<br>U</th>`;
-        }else{
-            kepala += `<th></th>`;
-        }
-    }
-    kepala += `</tr>`;
-    document.getElementById("kepalaTabel").innerHTML = kepala;
+    kep += `</tr>`;
+    document.getElementById("kepala").innerHTML = kep;
 
-    // === ISI TABEL ===
+    // Isi tabel
     let isi = "";
-    DAFTAR.forEach((orang, idx)=>{
+    DAFTAR.forEach((org, i)=>{
         isi += `<tr>
-            <td>${idx+1}</td>
-            <td style="text-align:left; padding:0 4px;">${orang.nama}</td>
-            <td style="text-align:left; padding:0 4px;">${orang.jabatan}</td>`;
-        for(let t=1; t<=hariTerakhir; t++){
+            <td>${i+1}</td>
+            <td style="text-align:left; padding:0 4px;">${org.nama}</td>
+            <td style="text-align:left; padding:0 4px;">${org.jabatan}</td>`;
+        for(let t=1; t<=akhir; t++){
             const d = new Date(thnSekarang, blnAktif-1, t);
             if(d.getDay() === 0){
                 isi += `<td class="minggu"></td>`;
                 continue;
             }
-            const tglStr = `${t}/${blnAktif}/${thnSekarang}`;
+            const kunci = `${t}/${blnAktif}/${thnSekarang}`;
             let ket = "";
-            let kelas = "kosong";
-            for(let key in dataAbsen){
-                if(dataAbsen[key].nama === orang.nama && dataAbsen[key].tgl === tglStr){
-                    ket = dataAbsen[key].jam || dataAbsen[key].ket;
-                    kelas = dataAbsen[key].warna === "merah" ? "terlambat" : "hadir";
+            let cls = "kosong";
+            for(let k in data){
+                if(data[k].nama === org.nama && data[k].tgl === kunci){
+                    ket = data[k].jam || data[k].ket;
+                    cls = data[k].warna === "merah" ? "telat" : "hadir";
                     break;
                 }
             }
-            isi += `<td class="${kelas}">${ket || ""}</td>`;
+            isi += `<td class="${cls}">${ket || ""}</td>`;
         }
         isi += `</tr>`;
     });
-    document.getElementById("isiTabel").innerHTML = isi;
+    document.getElementById("isi").innerHTML = isi;
 }
 
 function unduhExcel(){ alert("Fitur Unduh Excel"); }
-function hapusData(){ if(confirm("Yakin hapus semua data?")) db.remove(); }
+function hapusSemua(){ if(confirm("Yakin hapus semua data?")) db.remove(); }
 
-isiPilihanBulan();
+isiBulan();
 susunTabel();
 </script>
 </body>
