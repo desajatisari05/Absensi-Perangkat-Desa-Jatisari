@@ -34,8 +34,7 @@
         .kosong {background:#fff;}
         .minggu-huruf {font-weight:bold; color:#c62828; background:#ffebee;}
         .judul-tanggal {font-size:16px; letter-spacing:6px; text-align:center;}
-        .tanda-tangan {margin-top:15px; text-align:left; font-size:13px; padding-left:5px;}
-        .tanda-tangan .spasi-kecil {margin-top:15px;}
+        .tanda-tangan {margin-top:15px; text-align:right; font-size:13px; padding-right:20px;}
         @media print {
             .tombol, .pilih-bulan, .status {display:none;}
             body {background:#fff; padding:0;}
@@ -65,7 +64,8 @@
     <div class="tanda-tangan" id="tandaTangan">
         Desa Jatisari, . . . . . . . <span id="tglAkhirBulan"></span><br>
         &nbsp;&nbsp;KEPALA DESA JATISARI<br>
-        <div class="spasi-kecil"></div>
+        <br>
+        <br>
         &nbsp;&nbsp;&nbsp;&nbsp;MUHAMAD HASYIM
     </div>
 </div>
@@ -317,8 +317,7 @@ function cetakBerkas(){
             .hadir{color:green; font-weight:bold;}
             .terlambat{color:red; font-weight:bold;}
             .judul-tanggal{font-size:16px; letter-spacing:6px; text-align:center;}
-            .ttd{margin-top:15px; text-align:left; font-size:13px; padding-left:5px;}
-            .ttd .spasi-kecil{margin-top:15px;}
+            .ttd{margin-top:15px; text-align:right; font-size:13px; padding-right:20px;}
             .btn{padding:10px 20px; font-size:14px; cursor:pointer; margin:8px auto; display:block;}
             @page {size:215mm 330mm landscape; margin:0.3cm;}
             @media print{.btn{display:none;}}
@@ -375,7 +374,8 @@ function cetakBerkas(){
         <div class="ttd">
             Desa Jatisari, . . . . . . . ${tglAkhir}<br>
             &nbsp;&nbsp;KEPALA DESA JATISARI<br>
-            <div class="spasi-kecil"></div>
+            <br>
+            <br>
             &nbsp;&nbsp;&nbsp;&nbsp;MUHAMAD HASYIM
         </div>
         <button class="btn" onclick="window.print()">☐ KLIK DISINI UNTUK MENCETAK</button>
