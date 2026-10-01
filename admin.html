@@ -13,21 +13,17 @@
         .atas {text-align:center; margin-bottom:8px;}
         .atas select {padding:3px 6px; font-size:13px;}
         .status {color:#2e7d32; font-size:12px; margin:4px 0;}
-        .btn {padding:7px 14px; font-size:13px; border:none; border-radius:4px; color:#fff; font-weight:bold; cursor:pointer; margin:2px;}
-        .hijau {background:#2e7d32;}
-        .biru {background:#1976d2;}
-        .merah {background:#d32f2f;}
+        .btn {padding:6px 12px; font-size:13px; border:none; border-radius:4px; color:#fff; font-weight:bold; cursor:pointer; margin:2px;}
+        .hijau {background:#4caf50;}
+        .biru {background:#2196f3;}
+        .merah {background:#f44336;}
         table {width:100%; border-collapse:collapse; margin-top:5px;}
         th, td {border:1px solid #ccc; padding:2px 3px; text-align:center; font-size:12px;}
         th {background:#f0f0f0; font-weight:bold;}
         .minggu {background:#ffebee; color:#c62828; font-weight:bold;}
         .huruf-minggu {writing-mode:vertical-lr; letter-spacing:2px;}
-        .hadir {color:#2e7d32; font-weight:bold;}
-        .telat {color:#c62828; font-weight:bold;}
-        .kosong {color:#aaa;}
         .ttd {margin-top:30px; text-align:right; font-size:13px;}
         .ttd .nama {margin-top:50px; font-weight:bold;}
-        .judul-tanggal {text-align:center; font-weight:bold;}
         @media print {
             body {background:#fff;}
             .atas, .btn, .status {display:none;}
@@ -94,7 +90,7 @@ const thnSekarang = new Date().getFullYear();
 const blnSekarang = new Date().getMonth() + 1;
 let blnAktif = blnSekarang;
 
-// === PILIHAN BULAN OTOMATIS ===
+// === HANYA BAGIAN INI YANG DITAMBAHKAN ===
 function isiBulan(){
     const sel = document.getElementById("pilihBulan");
     sel.innerHTML = "";
@@ -120,12 +116,11 @@ function susunTabel(){
     document.getElementById("tglBawah").textContent = 
         "Desa Jatisari, " + akhir + " " + NAMA_BULAN[blnAktif-1] + " " + thnSekarang;
 
-    // === KEPALA TABEL — PERSIS SEPERTI FOTO ===
     let kep = `<tr>
         <th rowspan="2">NO</th>
         <th rowspan="2">NAMA</th>
         <th rowspan="2">JABATAN</th>
-        <th colspan="${akhir}" class="judul-tanggal">TANGGAL</th>
+        <th colspan="${akhir}">TANGGAL</th>
     </tr><tr>`;
     for(let t=1; t<=akhir; t++){
         const d = new Date(thnSekarang, blnAktif-1, t);
@@ -138,13 +133,12 @@ function susunTabel(){
     kep += `</tr>`;
     document.getElementById("kepala").innerHTML = kep;
 
-    // === ISI TABEL — DATA TETAP UTUH ===
     let isi = "";
     DAFTAR.forEach((org, i)=>{
         isi += `<tr>
             <td>${i+1}</td>
-            <td style="text-align:left; padding:0 4px;">${org.nama}</td>
-            <td style="text-align:left; padding:0 4px;">${org.jabatan}</td>`;
+            <td style="text-align:left;">${org.nama}</td>
+            <td style="text-align:left;">${org.jabatan}</td>`;
         for(let t=1; t<=akhir; t++){
             const d = new Date(thnSekarang, blnAktif-1, t);
             if(d.getDay() === 0){
@@ -153,16 +147,13 @@ function susunTabel(){
             }
             const kunci = `${t}/${blnAktif}/${thnSekarang}`;
             let ket = "";
-            let cls = "";
             for(let k in data){
                 if(data[k].nama === org.nama && data[k].tgl === kunci){
-                    ket = data[k].jam || data[k].ket;
-                    if(data[k].warna === "merah") cls = "telat";
-                    else if(data[k].ket === "H") cls = "hadir";
+                    ket = data[k].jam || data[k].ket || "";
                     break;
                 }
             }
-            isi += `<td class="${cls}">${ket}</td>`;
+            isi += `<td>${ket}</td>`;
         }
         isi += `</tr>`;
     });
