@@ -7,32 +7,28 @@
     <style>
         * {font-family: Arial, sans-serif; margin:0; padding:0; box-sizing:border-box;}
         body {background:#f1f8e9; padding:8px; font-size:13px;}
-        .wadah {width:100%; max-width:1200px; margin:0 auto; background:#fff; padding:15px;}
-        h1 {text-align:center; font-size:18px; color:#000; margin-bottom:3px; font-weight:bold;}
-        h2 {text-align:center; font-size:14px; margin-bottom:10px; font-weight:normal;}
-        .baris-atas {text-align:center; margin-bottom:12px;}
-        .baris-atas select {padding:4px 8px; font-size:13px; min-width:180px;}
-        .status-hubung {color:#2e7d32; font-weight:bold; margin:6px 0;}
-        .tombol {padding:8px 16px; font-size:13px; border:none; border-radius:4px; color:#fff; font-weight:bold; cursor:pointer; margin:3px;}
+        .wadah {width:100%; max-width:1200px; margin:0 auto; background:#fff; padding:5px;}
+        h1 {text-align:center; font-size:17px; color:#000; margin-bottom:2px; font-weight:bold;}
+        h2 {text-align:center; font-size:13px; margin-bottom:8px; font-weight:normal;}
+        .baris-atas {text-align:center; margin-bottom:8px;}
+        .baris-atas select {padding:3px 6px; font-size:13px;}
+        .status-hubung {color:#2e7d32; font-size:12px; margin:4px 0;}
+        .tombol {padding:7px 14px; font-size:13px; border:none; border-radius:4px; color:#fff; font-weight:bold; cursor:pointer; margin:2px;}
         .hijau {background:#2e7d32;}
         .biru {background:#1976d2;}
         .merah {background:#d32f2f;}
-        table {width:100%; border-collapse:collapse; margin-top:10px;}
-        table th, table td {border:1px solid #333; padding:4px 3px; text-align:center; vertical-align:middle; font-size:12px;}
+        table {width:100%; border-collapse:collapse; margin-top:5px;}
+        table th, table td {border:1px solid #333; padding:3px 2px; text-align:center; font-size:12px;}
         table th {background:#e8f5e9; font-weight:bold;}
-        .kolom-tanggal {min-width:28px;}
         .minggu {background:#ffebee; color:#c62828; font-weight:bold;}
-        .huruf-minggu {writing-mode:vertical-lr; letter-spacing:2px; font-weight:bold;}
         .hadir {color:#2e7d32; font-weight:bold;}
         .terlambat {color:#c62828; font-weight:bold;}
         .kosong {color:#aaa;}
-        .tanda-tangan {margin-top:40px; text-align:right; font-size:13px;}
-        .tanda-tangan .nama {margin-top:60px; font-weight:bold;}
+        .tanda-tangan {margin-top:30px; text-align:right; font-size:13px;}
+        .tanda-tangan .nama {margin-top:50px; font-weight:bold;}
         @media print {
-            body {background:#fff; padding:0;}
-            .wadah {box-shadow:none; padding:0;}
+            body {background:#fff;}
             .baris-atas, .tombol, .status-hubung {display:none;}
-            table th, table td {border:1px solid #000;}
         }
     </style>
 </head>
@@ -42,25 +38,21 @@
     <h2>KECAMATAN TEMPEH KABUPATEN LUMAJANG</h2>
 
     <div class="baris-atas">
-        <label for="pilihBulan">Bulan:</label>
+        Bulan:
         <select id="pilihBulan" onchange="ubahBulan()"></select>
         <div class="status-hubung">TERHUBUNG - Data diperbarui otomatis</div>
         <button class="tombol hijau" onclick="unduhExcel()">Unduh Excel</button>
-        <button class="tombol biru" onclick="window.print()">Cetak Berkas</button>
+        <button class="tombol biru" onclick="window.print()">CETAK BERKAS</button>
         <button class="tombol merah" onclick="hapusData()">Hapus Semua Data</button>
     </div>
 
-    <table id="tabelAbsen">
-        <thead id="kepalaTabel">
-            <!-- ISI OTOMATIS -->
-        </thead>
-        <tbody id="isiTabel">
-            <!-- ISI OTOMATIS -->
-        </tbody>
+    <table>
+        <thead id="kepalaTabel"></thead>
+        <tbody id="isiTabel"></tbody>
     </table>
 
     <div class="tanda-tangan">
-        <div id="tempatTanggal">Desa Jatisari, 30 September 2026</div>
+        <div id="tglBawah">Desa Jatisari, 30 SEPTEMBER 2026</div>
         <div>KEPALA DESA JATISARI</div>
         <div class="nama">MUHAMAD HASYIM</div>
     </div>
@@ -81,7 +73,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("dataAbsen");
 
-// === DAFTAR NAMA & JABATAN ===
+const NAMA_BULAN = ["JANUARI","FEBRUARI","MARET","APRIL","MEI","JUNI","JULI","AGUSTUS","SEPTEMBER","OKTOBER","NOVEMBER","DESEMBER"];
 const DAFTAR = [
     {nama:"MUHAMAD HASYIM", jabatan:"Kepala Desa"},
     {nama:"RUBIANTO", jabatan:"Sekretaris Desa"},
@@ -97,128 +89,105 @@ const DAFTAR = [
     {nama:"WAHYU HARI P.", jabatan:"Kasun Krajan"}
 ];
 
-const NAMA_BULAN = [
-    "JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI",
-    "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"
-];
-const NAMA_HARI = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+const thnSekarang = new Date().getFullYear();
+const blnSekarang = new Date().getMonth() + 1;
+let blnAktif = blnSekarang;
 
-let dataAbsen = {};
-let bulanAktif = 9;
-let thnAktif = 2026;
-
-// === BUAT PILIHAN BULAN OTOMATIS ===
+// === ISI PILIHAN BULAN OTOMATIS ===
 function isiPilihanBulan(){
     const pilih = document.getElementById("pilihBulan");
-    const sekarang = new Date();
-    thnAktif = sekarang.getFullYear();
-    const blnSekarang = sekarang.getMonth();
-
     pilih.innerHTML = "";
-    for(let b = 0; b <= blnSekarang; b++){
+    for(let b=1; b<=blnSekarang; b++){
         const opsi = document.createElement("option");
-        opsi.value = `${b+1}/${thnAktif}`;
-        opsi.textContent = `${NAMA_BULAN[b]} ${thnAktif}`;
-        if(b === blnSekarang){
-            opsi.selected = true;
-            bulanAktif = b+1;
-        }
+        opsi.value = b;
+        opsi.textContent = NAMA_BULAN[b-1] + " " + thnSekarang;
+        if(b === blnSekarang) opsi.selected = true;
         pilih.appendChild(opsi);
     }
 }
 
 function ubahBulan(){
-    const val = document.getElementById("pilihBulan").value.split("/");
-    bulanAktif = parseInt(val[0]);
-    thnAktif = parseInt(val[1]);
+    blnAktif = parseInt(document.getElementById("pilihBulan").value);
     susunTabel();
 }
 
-// === AMBIL DATA ===
+let dataAbsen = {};
 db.on("value", (snap)=>{
     dataAbsen = snap.val() || {};
     susunTabel();
 });
 
-// === SUSUN TABEL ===
 function susunTabel(){
-    const hariPertama = new Date(thnAktif, bulanAktif-1, 1);
-    const hariTerakhir = new Date(thnAktif, bulanAktif, 0);
-    const jmlHari = hariTerakhir.getDate();
+    const hariTerakhir = new Date(thnSekarang, blnAktif, 0).getDate();
+    document.getElementById("tglBawah").textContent = 
+        "Desa Jatisari, " + hariTerakhir + " " + NAMA_BULAN[blnAktif-1] + " " + thnSekarang;
 
-    // Perbarui tulisan tempat & tanggal
-    document.getElementById("tempatTanggal").textContent = 
-        `Desa Jatisari, ${jmlHari} ${NAMA_BULAN[bulanAktif-1]} ${thnAktif}`;
-
-    // === KEPALA TABEL ===
-    let htmlKepala = `<tr>
+    // === KEPALA TABEL — TANGGAL ===
+    let kepala = `<tr>
         <th rowspan="2">NO</th>
         <th rowspan="2">NAMA</th>
         <th rowspan="2">JABATAN</th>
-        <th colspan="${jmlHari}">TANGGAL</th>
+        <th colspan="${hariTerakhir}">TANGGAL</th>
     </tr><tr>`;
-
-    for(let t=1; t<=jmlHari; t++){
-        const d = new Date(thnAktif, bulanAktif-1, t);
-        const hr = d.getDay();
-        if(hr === 0){
-            htmlKepala += `<th class="kolom-tanggal minggu huruf-minggu">M<br>I<br>N<br>G<br>G<br>U</th>`;
+    
+    // Baris angka tanggal
+    for(let t=1; t<=hariTerakhir; t++){
+        const d = new Date(thnSekarang, blnAktif-1, t);
+        if(d.getDay() === 0){
+            kepala += `<th class="minggu"></th>`;
         }else{
-            htmlKepala += `<th class="kolom-tanggal">${t}</th>`;
+            kepala += `<th>${t}</th>`;
         }
     }
-    htmlKepala += `</tr>`;
-    document.getElementById("kepalaTabel").innerHTML = htmlKepala;
+    kepala += `</tr><tr>`;
+    
+    // Baris huruf M-I-N-G-G-U ke bawah
+    for(let t=1; t<=hariTerakhir; t++){
+        const d = new Date(thnSekarang, blnAktif-1, t);
+        if(d.getDay() === 0){
+            kepala += `<th class="minggu">M<br>I<br>N<br>G<br>G<br>U</th>`;
+        }else{
+            kepala += `<th></th>`;
+        }
+    }
+    kepala += `</tr>`;
+    document.getElementById("kepalaTabel").innerHTML = kepala;
 
     // === ISI TABEL ===
-    let htmlIsi = "";
+    let isi = "";
     DAFTAR.forEach((orang, idx)=>{
-        htmlIsi += `<tr>
+        isi += `<tr>
             <td>${idx+1}</td>
-            <td style="text-align:left; padding:0 5px;">${orang.nama}</td>
-            <td style="text-align:left; padding:0 5px;">${orang.jabatan}</td>`;
-        
-        for(let t=1; t<=jmlHari; t++){
-            const d = new Date(thnAktif, bulanAktif-1, t);
-            const hr = d.getDay();
-            const tglStr = `${t}/${bulanAktif}/${thnAktif}`;
+            <td style="text-align:left; padding:0 4px;">${orang.nama}</td>
+            <td style="text-align:left; padding:0 4px;">${orang.jabatan}</td>`;
+        for(let t=1; t<=hariTerakhir; t++){
+            const d = new Date(thnSekarang, blnAktif-1, t);
+            if(d.getDay() === 0){
+                isi += `<td class="minggu"></td>`;
+                continue;
+            }
+            const tglStr = `${t}/${blnAktif}/${thnSekarang}`;
             let ket = "";
-            let warna = "";
-
-            // Cari data absen
+            let kelas = "kosong";
             for(let key in dataAbsen){
                 if(dataAbsen[key].nama === orang.nama && dataAbsen[key].tgl === tglStr){
                     ket = dataAbsen[key].jam || dataAbsen[key].ket;
-                    warna = dataAbsen[key].warna === "merah" ? "terlambat" : "hadir";
+                    kelas = dataAbsen[key].warna === "merah" ? "terlambat" : "hadir";
                     break;
                 }
             }
-
-            if(hr === 0){
-                htmlIsi += `<td class="minggu">-</td>`;
-            }else if(ket){
-                htmlIsi += `<td class="${warna}">${ket}</td>`;
-            }else{
-                htmlIsi += `<td class="kosong">-</td>`;
-            }
+            isi += `<td class="${kelas}">${ket || ""}</td>`;
         }
-        htmlIsi += `</tr>`;
+        isi += `</tr>`;
     });
-    document.getElementById("isiTabel").innerHTML = htmlIsi;
+    document.getElementById("isiTabel").innerHTML = isi;
 }
 
-// === FUNGSI LAIN ===
-function unduhExcel(){
-    alert("Fitur unduh Excel siap");
-}
-function hapusData(){
-    if(confirm("Yakin ingin menghapus semua data?")){
-        db.remove();
-    }
-}
+function unduhExcel(){ alert("Fitur Unduh Excel"); }
+function hapusData(){ if(confirm("Yakin hapus semua data?")) db.remove(); }
 
-// === JALANKAN SAAT DIBUKA ===
 isiPilihanBulan();
+susunTabel();
 </script>
 </body>
 </html>
