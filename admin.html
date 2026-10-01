@@ -33,6 +33,7 @@
         .terlambat {color:red; font-weight:bold;}
         .kosong {background:#fff;}
         .minggu-huruf {font-weight:bold; color:#c62828; background:#ffebee;}
+        .judul-tanggal {letter-spacing:4px; text-align:left; padding-left:10px;}
         @media print {
             .tombol, .pilih-bulan, .status {display:none;}
             body {background:#fff; padding:0;}
@@ -151,13 +152,15 @@ function buatTabel(){
     const kepala = document.getElementById("bagianKepala");
     const isi = document.getElementById("bagianIsi");
     
-    let barisJudul = `<tr><th rowspan='2'>NO</th><th rowspan='2'>NAMA</th><th rowspan='2'>JABATAN</th>`;
-    for(let t=1; t<=jmlTgl; t++){
-        const merah = cekApakahMerah(t,bln,thn);
-        barisJudul += merah ? `<th class="tgl-merah"></th>` : `<th></th>`;
-    }
-    barisJudul += "</tr>";
+    // Baris 1: NO, NAMA, JABATAN tetap + TANGGAL gabungan 1-31
+    let barisJudul = `<tr>
+        <th rowspan="2">NO</th>
+        <th rowspan="2">NAMA</th>
+        <th rowspan="2">JABATAN</th>
+        <th colspan="${jmlTgl}" class="judul-tanggal">TANGGAL</th>
+    </tr>`;
     
+    // Baris 2: angka tanggal 1, 2, 3 ... 31
     let barisAngka = "<tr>";
     for(let t=1; t<=jmlTgl; t++){
         const merah = cekApakahMerah(t,bln,thn);
@@ -166,15 +169,18 @@ function buatTabel(){
     barisAngka += "</tr>";
     kepala.innerHTML = barisJudul + barisAngka;
     
+    // Isi tabel
     let barisIsi = "";
     const hurufMinggu = ["M","I","N","G","G","U"];
     DAFTAR.forEach((orang, idx)=>{
-        barisIsi += `<tr><td>${idx+1}</td><td>${orang.nama}</td><td>${orang.jabatan}</td>`;
+        barisIsi += `<tr>
+            <td>${idx+1}</td>
+            <td>${orang.nama}</td>
+            <td>${orang.jabatan}</td>`;
         for(let t=1; t<=jmlTgl; t++){
             const minggu = cekApakahMinggu(t,bln,thn);
             const merah = cekApakahMerah(t,bln,thn);
             if(minggu){
-                // Baris 1-6 tampil huruf, baris 7-12 kosong
                 if(idx < 6){
                     barisIsi += `<td class="minggu-huruf">${hurufMinggu[idx]}</td>`;
                 } else {
@@ -298,6 +304,7 @@ function cetakBerkas(){
             .minggu-huruf{color:red; font-weight:bold; background:#ffebee;}
             .hadir{color:green; font-weight:bold;}
             .terlambat{color:red; font-weight:bold;}
+            .judul-tanggal{text-align:left; padding-left:10px; letter-spacing:4px;}
             .ttd{border:none; margin-top:15px; width:100%;}
             .ttd td{border:none; text-align:right; padding-right:15px; font-size:12px;}
             .btn{padding:10px 20px; font-size:14px; cursor:pointer; margin:8px auto; display:block;}
@@ -311,40 +318,46 @@ function cetakBerkas(){
         <h3>Bulan: ${NAMA_BULAN[bln-1]} ${thn}</h3>
         <table>
             <thead>
-                <tr><th rowspan="2">NO</th><th rowspan="2">NAMA</th><th rowspan="2">JABATAN</th>${Array.from({length:jmlTgl},(_,i)=>{
-                    const t=i+1; const merah=cekApakahMerah(t,bln,thn);
-                    return merah?`<th class="tgl-merah"></th>`:`<th></th>`;
-                }).join("")}</tr>
+                <tr>
+                    <th rowspan="2">NO</th>
+                    <th rowspan="2">NAMA</th>
+                    <th rowspan="2">JABATAN</th>
+                    <th colspan="${jmlTgl}" class="judul-tanggal">TANGGAL</th>
+                </tr>
                 <tr>${Array.from({length:jmlTgl},(_,i)=>{
                     const t=i+1; const merah=cekApakahMerah(t,bln,thn);
                     return merah?`<th class="tgl-merah">${t}</th>`:`<th>${t}</th>`;
                 }).join("")}</tr>
             </thead>
             <tbody>
-                ${DAFTAR.map((orang,idx)=>`<tr><td>${idx+1}</td><td>${orang.nama}</td><td>${orang.jabatan}</td>${
-                    Array.from({length:jmlTgl},(_,i)=>{
-                        const t=i+1; 
-                        const minggu = cekApakahMinggu(t,bln,thn);
-                        const merah = cekApakahMerah(t,bln,thn);
-                        if(minggu){
-                            const huruf = ["M","I","N","G","G","U"];
-                            if(idx < 6){
-                                return `<td class="minggu-huruf">${huruf[idx]}</td>`;
-                            } else {
-                                return `<td class="minggu-huruf"></td>`;
+                ${DAFTAR.map((orang,idx)=>`<tr>
+                    <td>${idx+1}</td>
+                    <td>${orang.nama}</td>
+                    <td>${orang.jabatan}</td>${
+                        Array.from({length:jmlTgl},(_,i)=>{
+                            const t=i+1; 
+                            const minggu = cekApakahMinggu(t,bln,thn);
+                            const merah = cekApakahMerah(t,bln,thn);
+                            if(minggu){
+                                const huruf = ["M","I","N","G","G","U"];
+                                if(idx < 6){
+                                    return `<td class="minggu-huruf">${huruf[idx]}</td>`;
+                                } else {
+                                    return `<td class="minggu-huruf"></td>`;
+                                }
                             }
-                        }
-                        if(merah) return `<td class="hari-merah"></td>`;
-                        const kunci = `${orang.nama}-${t}`;
-                        const d=dataAbsen[kunci];
-                        if(d){
-                            if(d.ket==="Hadir") return `<td class="hadir">${d.jam}</td>`;
-                            if(d.ket==="Terlambat") return `<td class="terlambat">${d.jam}</td>`;
-                            return `<td>${(d.ket||"").substring(0,1)}</td>`;
-                        }
-                        return `<td></td>`;
-                    }).join("")
-                }</tr>`).join("")}
+                            if(merah) return `<td class="hari-merah"></td>`;
+                            const kunci = `${orang.nama}-${t}`;
+                            const d=dataAbsen[kunci];
+                            if(d){
+                                if(d.ket==="Hadir") return `<td class="hadir">${d.jam}</td>`;
+                                if(d.ket==="Terlambat") return `<td class="terlambat">${d.jam}</td>`;
+                                return `<td>${(d.ket||"").substring(0,1)}</td>`;
+                            }
+                            return `<td></td>`;
+                        }).join("")
+                    }
+                </tr>`).join("")}
             </tbody>
         </table>
         <table class="ttd">
