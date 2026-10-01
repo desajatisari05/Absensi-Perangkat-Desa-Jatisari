@@ -33,7 +33,7 @@
         .terlambat {color:red; font-weight:bold;}
         .kosong {background:#fff;}
         .minggu-huruf {font-weight:bold; color:#c62828; background:#ffebee;}
-        .judul-tanggal {letter-spacing:4px; text-align:left; padding-left:10px;}
+        .judul-tanggal {font-size:16px; letter-spacing:6px; text-align:center;}
         @media print {
             .tombol, .pilih-bulan, .status {display:none;}
             body {background:#fff; padding:0;}
@@ -152,7 +152,6 @@ function buatTabel(){
     const kepala = document.getElementById("bagianKepala");
     const isi = document.getElementById("bagianIsi");
     
-    // Baris 1: NO, NAMA, JABATAN tetap + TANGGAL gabungan 1-31
     let barisJudul = `<tr>
         <th rowspan="2">NO</th>
         <th rowspan="2">NAMA</th>
@@ -160,7 +159,6 @@ function buatTabel(){
         <th colspan="${jmlTgl}" class="judul-tanggal">TANGGAL</th>
     </tr>`;
     
-    // Baris 2: angka tanggal 1, 2, 3 ... 31
     let barisAngka = "<tr>";
     for(let t=1; t<=jmlTgl; t++){
         const merah = cekApakahMerah(t,bln,thn);
@@ -169,7 +167,6 @@ function buatTabel(){
     barisAngka += "</tr>";
     kepala.innerHTML = barisJudul + barisAngka;
     
-    // Isi tabel
     let barisIsi = "";
     const hurufMinggu = ["M","I","N","G","G","U"];
     DAFTAR.forEach((orang, idx)=>{
@@ -304,7 +301,7 @@ function cetakBerkas(){
             .minggu-huruf{color:red; font-weight:bold; background:#ffebee;}
             .hadir{color:green; font-weight:bold;}
             .terlambat{color:red; font-weight:bold;}
-            .judul-tanggal{text-align:left; padding-left:10px; letter-spacing:4px;}
+            .judul-tanggal{font-size:16px; letter-spacing:6px; text-align:center;}
             .ttd{border:none; margin-top:15px; width:100%;}
             .ttd td{border:none; text-align:right; padding-right:15px; font-size:12px;}
             .btn{padding:10px 20px; font-size:14px; cursor:pointer; margin:8px auto; display:block;}
